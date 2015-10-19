@@ -1,9 +1,11 @@
+
 package nameserver;
-import hashing_function.Hash;
+
 
 import java.io.*;
 import java.math.*;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.util.*;
 
@@ -31,7 +33,7 @@ public class Node {
            INameServer obj = (INameServer) Naming.lookup( "//"+"66.66.66.69"+"/NameServer");         //objectname in registry 
            //System.out.println(obj.AddNode());
            int id = add();
-           String ip = "192.1.1.1";
+           String ip = address();
            obj.addNode(id, ip);
            obj.removeNode(id);
            obj.lookUpFile("test");
@@ -51,7 +53,7 @@ public class Node {
 		// TODO Auto-generated method stub
 		Date date = new Date(15,10,15);
 		long diff =date.getTime();
-		String stringDate = Objects.toString(diff,null);
+		String stringDate = date.toString();
 		int id = keyHash(stringDate);
 		//String ip = "192.1.1.1";
 		//obj.addNode(id, ip);
@@ -59,4 +61,17 @@ public class Node {
 		//NetworkInterface.getNetworkInterfaces()
 		return id;
 	}
-}
+	
+
+	private static String address() throws UnknownHostException {
+			
+	
+			 InetAddress address = InetAddress.getLocalHost(); 
+			    String hostIP = address.getHostAddress() ;
+			    return hostIP;
+		 
+		     
+		    }
+		
+	}
+
