@@ -20,7 +20,7 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 
 	NameServer() throws RemoteException {	// default constructor.
 
-	LookupServer() throws RemoteException {	// default constructor.
+	//LookupServer() throws RemoteException {	// default constructor.
 
 		super();
 		nameRegister = new HashMap <Integer, String> ();
@@ -30,10 +30,10 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		return nameRegister.get(id);
 	}
 	
-	public boolean add (int id, String adr) {	// Add a node to the map.
+	public String add (int id, String adr) {	// Add a node to the map.
 		System.out.println ("LookupServer: add procedure");
 		if (nameRegister.containsKey(id)) {
-			return false;
+			return "fout";
 		}
 		nameRegister.put(id, adr);
 		
