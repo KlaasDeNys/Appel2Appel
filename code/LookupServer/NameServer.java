@@ -15,18 +15,18 @@ import java.util.HashMap;
 public class NameServer extends UnicastRemoteObject implements INameServer {
 	
 	private static final long serialVersionUID = 1L;
-	private HashMap <Integer, String> nameRegister;
+	private HashMap <Integer, String> nameRegister;	// Here we will map te ip's to the id's
 
-	LookupServer() throws RemoteException {
+	LookupServer() throws RemoteException {	// default constructor.
 		super();
 		nameRegister = new HashMap <Integer, String> ();
 	}
 	
-	public String lookUp (int id) {
+	public String lookUp (int id) {	// return the ip by the given id.
 		return nameRegister.get(id);
 	}
 	
-	public boolean add (int id, String adr) {
+	public boolean add (int id, String adr) {	// Add a node to the map.
 		System.out.println ("LookupServer: add procedure");
 		if (nameRegister.containsKey(id)) {
 			return false;
