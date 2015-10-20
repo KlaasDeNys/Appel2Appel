@@ -1,13 +1,19 @@
 package NameServer;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.Date;
 import java.util.Scanner;
-//import java.util.InputMismatchException;
 
-//import NameServer.ILookupServer;
+import NameServer.INameServer;
+
 
 /**
  * 
@@ -16,22 +22,129 @@ import java.util.Scanner;
  *
  */
 
-public class Node {
+public class Node extends UnicastRemoteObject implements INode {
 	
-	public Node () {
+	public int prevId;
+	public int nextId;
+	public int prevNode;
+	public int nextNode;
+	public int id;
+	private static final long serialVersionUID = 1L;
+	
+	public Node () throws RemoteException{
 		
 	}
 	
-	public static void main (String [] args) {
+	public int generateId() {		//Generate an ID.
+		Date date = new Date(15,10,15);		//Based on the date, we generate an ID.		
+		String stringDate = date.toString();
+		id = keyHash(stringDate);		//Generate the ID.
+		//String ip = "192.1.1.1";
+		//obj.addNode(id, ip);
+		//String ip = InetAddress.getLocalHost().getHostAddress();
+		//NetworkInterface.getNetworkInterfaces()
+		return id;
+	}
+	
+	public int keyHash(String key)			//Hashfunction for strings.
+	{
+	    int hashCode = key.hashCode();
+	    hashCode = Math.abs(hashCode);
+	    int value = (int) Math.pow(2, 15); 	//2^15 = 32678
+	    while (hashCode > 32767 ) { 		//Value must be between 0 and 32768
+	    	hashCode = hashCode -value;
+	    }
+	    return hashCode;
+	}
+	
+	public String address(){
+		
+		InetAddress address;
+		String hostIP = "";
+		try {
+			address = InetAddress.getLocalHost();
+			hostIP = address.getHostAddress() ;
+		} catch (UnknownHostException e) {
+			System.out.println("UnknownHostException: " + e);
+			e.printStackTrace();
+		}
+		return hostIP;
+	}
+	
+	public boolean changePrevious(int id){
+		prevNode = id;
+		return true;
+	}
+	
+	public boolean contactPrevious(){
+		try {
+			INameServer obj1 = (INameServer) Naming.lookup ("//"+"localhost"+"/LNS");
+			prevId = obj1.getPrev(id);
+			String prevIp = obj1.lookUp(prevId);
+			INode objNode = (INode) Naming.lookup("//"+prevIp+"/Node"); 
+			objNode.changeNext(id);
+		} catch (MalformedURLException e) {
+			System.out.println("Client MalformedURLException: " + e);
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			System.out.println("Client RemoteException: " + e);
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			System.out.println("Client NotBoundException: " + e);
+			e.printStackTrace();
+		}			
+		return true;
+	}
+	
+	public boolean changeNext(int id){
+		nextNode = id;
+		return true;
+	}
+	
+	public boolean contactNext(){
+		try {
+			INameServer obj1 = (INameServer) Naming.lookup ("//"+"localhost"+"/LNS");
+			nextId = obj1.getNext(id);
+			String nextIp = obj1.lookUp(nextId);
+			INode objNode = (INode) Naming.lookup("//"+nextIp+"/Node"); 
+			objNode.changePrevious(id);
+		} catch (MalformedURLException e) {
+			System.out.println("Client MalformedURLException: " + e);
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			System.out.println("Client RemoteException: " + e);
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			System.out.println("Client NotBoundException: " + e);
+			e.printStackTrace();
+		}
+		return true;
+	}
+	
+	public void initialise(){
+		Socket sock;
+		try {
+			sock = new Socket("test",13267);
+			Download initObj = new Download(sock);
+			initObj.run();
+		} catch (UnknownHostException e) {
+			System.out.println("UnknownHostException: " + e);
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.out.println("IOException: " + e);
+			e.printStackTrace();
+		}		
+	}
+	
+	public void main (String [] args) {
 		
 		Scanner scanner = new Scanner (System.in);
 		
 		try {
 			INameServer obj = (INameServer) Naming.lookup ("//"+"localhost"+"/LNS");
-			int id;
 			boolean flag = true;
 			do {
-				System.out.print ("\n[1]: look up ip\n[2]: add ip\n[3]: delete id\n[0]: quit\n > ");
+				System.out.print ("\n[1]: look up ip\n[2]: add ip\n[0]: quit\n > ");
 				int choise = scanner.nextInt();
 				scanner.nextLine();
 				switch (choise) {
@@ -41,16 +154,11 @@ public class Node {
 					System.out.println ("IP adr: " + obj.lookUp(id));
 					break;
 				case 2:
-					System.out.print ("\nID: ");
-					id = scanner.nextInt();
-					System.out.print ("IP adr: ");
-					String ip = scanner.next();
+					id = generateId();		//Generate an ID
+					String ip = address();
+					System.out.println(id);
+					System.out.println(ip);
 					obj.add(id, ip);
-					break;
-				case 3:
-					System.out.print ("\nid: ");
-					id = scanner.nextInt();
-					System.out.println ("Delete: " + obj.delete(id));
 					break;
 				case 0:
 					flag = false;
