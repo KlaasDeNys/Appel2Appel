@@ -29,21 +29,24 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 	}
 	
 	public String lookUp (int id) {	// return the ip by the given id.
-		return nameRegister.get(id);
+		System.out.print ("NameServer: lookUp " + id);
+		String ip = nameRegister.get(id);
+		System.out.println ("\tip: " + ip);
+		return ip;
 	}
 	
 	public String add (int id, String adr) {	// Add a node to the map.
-		System.out.println ("LookupServer: add procedure");
+		System.out.println ("NameServer: add procedure\tid: " + id + "\tip: " + adr);
 		if (nameRegister.containsKey(id)) {
-			return "fout";
+			return null;
 		}
 		nameRegister.put(id, adr);
 		
-		return "66.66.66.66";
+		return "10.1.1.1";
 	}
 
 	public boolean delete (int id){
-		System.out.println ("LookupServer: delete procedure");
+		System.out.println ("NameServer: delete " + id);
 		if (nameRegister.containsKey(id)) {
 			nameRegister.remove(id);			
 			return true;
@@ -52,6 +55,7 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 	}
 
 	public int getPrev (int id) {
+		System.out.print ("NameServer: " + id + " entered getPrev\tresult: ");
 		if (!nameRegister.containsKey (id) || nameRegister.size() <= 1) return 0;
 		
 		Set <Integer> keySet = nameRegister.keySet ();
@@ -60,17 +64,19 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		int prevId = i.next();
 		if (prevId == id) {	// When the given id is the first element of the map...
 			for (;i.hasNext();prevId = i.next());
+			System.out.println (prevId);
 			return prevId;	// We must get the latest element of the set.
 		}
 		
 		while (true) {
 			int temp = i.next();
-			if (temp == id) return prevId;
+			if (temp == id) {System.out.println (prevId);  return prevId;}
 			prevId = temp;
 		}
 	}
 	
 	public int getNext (int id) {
+		System.out.println ("NameServer: " + id + " entered getNext\tresult: ");
 		if (!nameRegister.containsKey (id) || nameRegister.size() <= 1) return 0;
 		
 		Set <Integer> keySet = nameRegister.keySet ();
@@ -80,8 +86,8 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		int currentId = firstId;
 		
 		while (true) {
-			if (!i.hasNext()) return firstId;
-			if (currentId == id) return i.next();
+			if (!i.hasNext()) {System.out.println (firstId); return firstId;}
+			if (currentId == id) {int result =  i.next(); System.out.println(result); return result;}
 			currentId = i.next();
 		}
 	}
