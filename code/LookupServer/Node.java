@@ -1,12 +1,13 @@
-package client;
+package NameServer;
 
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Scanner;
+//import java.util.InputMismatchException;
 
-import server.ILookupServer;
+//import NameServer.ILookupServer;
 
 /**
  * 
@@ -26,11 +27,11 @@ public class Node {
 		Scanner scanner = new Scanner (System.in);
 		
 		try {
-			ILookupServer obj = (ILookupServer) Naming.lookup ("//"+"localhost"+"/LNS");
+			INameServer obj = (INameServer) Naming.lookup ("//"+"localhost"+"/LNS");
 			int id;
 			boolean flag = true;
 			do {
-				System.out.print ("\n[1]: look up ip\n[2]: add ip\n[0]: quit\n > ");
+				System.out.print ("\n[1]: look up ip\n[2]: add ip\n[3]: delete id\n[0]: quit\n > ");
 				int choise = scanner.nextInt();
 				scanner.nextLine();
 				switch (choise) {
@@ -40,14 +41,16 @@ public class Node {
 					System.out.println ("IP adr: " + obj.lookUp(id));
 					break;
 				case 2:
-					System.out.print ("\nName: ");
+					System.out.print ("\nID: ");
 					id = scanner.nextInt();
 					System.out.print ("IP adr: ");
-					String ip = scanner.nextLine();
-					
-					
+					String ip = scanner.next();
 					obj.add(id, ip);
-					
+					break;
+				case 3:
+					System.out.print ("\nid: ");
+					id = scanner.nextInt();
+					System.out.println ("Delete: " + obj.delete(id));
 					break;
 				case 0:
 					flag = false;
