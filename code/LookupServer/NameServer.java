@@ -37,7 +37,7 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		}
 		nameRegister.put(id, adr);
 		
-		return true;
+		return "66.66.66.66";
 	}
 
 	public boolean delete (int id){
