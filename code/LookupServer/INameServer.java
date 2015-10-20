@@ -13,4 +13,5 @@ import java.rmi.RemoteException;
 public interface INameServer extends Remote{
 	String lookUp (int id) throws RemoteException;
 	boolean add (int id, String adr) throws RemoteException;
+	boolean delete (int id) throws RemoteException;
 }

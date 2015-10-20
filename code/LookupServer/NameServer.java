@@ -35,4 +35,13 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		
 		return true;
 	}
+
+	public boolean add (int id){
+		System.out.println ("LookupServer: delete procedure");
+		if (nameRegister.containsKey(id)) {
+			nameRegister.remove(id);			
+			return true;
+		}
+		return false;
+	}
 }
