@@ -15,9 +15,9 @@ import server.ILookupServer;
  *
  */
 
-public class Client {
+public class Node {
 	
-	public Client () {
+	public Node () {
 		
 	}
 	

@@ -10,7 +10,7 @@ import java.rmi.RemoteException;
  *
  */
 
-public interface ILookupServer extends Remote{
+public interface INameServer extends Remote{
 	String lookUp (int id) throws RemoteException;
 	boolean add (int id, String adr) throws RemoteException;
 }

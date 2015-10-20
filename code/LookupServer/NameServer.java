@@ -12,7 +12,7 @@ import java.util.HashMap;
  *
  */
 
-public class LookupServer extends UnicastRemoteObject implements ILookupServer {
+public class NameServer extends UnicastRemoteObject implements INameServer {
 	
 	private static final long serialVersionUID = 1L;
 	private HashMap <Integer, String> nameRegister;

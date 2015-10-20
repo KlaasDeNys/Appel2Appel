@@ -18,7 +18,7 @@ public class RMIServer {
 	
 	public static void main (String [] args) {
 		try {
-			LookupServer obj = new LookupServer ();
+			LookupServer obj = new NameServer ();
 			Registry registry = LocateRegistry.createRegistry (1099);
 			registry.bind("LNS", obj);
 			System.out.println("System online");
