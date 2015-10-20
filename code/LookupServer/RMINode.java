@@ -11,8 +11,9 @@ public class RMINode {
 	public static void main (String [] args) {
 		try {
 			Node obj = new Node();
-			Registry registry = LocateRegistry.createRegistry (1099);
-			registry.bind("LNS", obj);
+			obj.main(args);
+			Registry registry = LocateRegistry.createRegistry (1098);
+			registry.bind("Node", obj);
 			System.out.println("System online");
 		} catch (Exception e) {
 			System.out.println(e);

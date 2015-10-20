@@ -11,5 +11,5 @@ public interface INode extends Remote{
 	boolean contactPrevious() throws RemoteException;
 	boolean changeNext(int id) throws RemoteException;
 	boolean contactNext() throws RemoteException;
-	void initialise() throws RemoteException;
+	//void initialise() throws RemoteException;
 }

@@ -78,7 +78,7 @@ public class Node extends UnicastRemoteObject implements INode {
 	
 	public boolean contactPrevious(){
 		try {
-			INameServer obj1 = (INameServer) Naming.lookup ("//"+"localhost"+"/LNS");
+			INameServer obj1 = (INameServer) Naming.lookup ("//"+"66.66.66.66"+"/LNS");
 			prevId = obj1.getPrev(id);
 			String prevIp = obj1.lookUp(prevId);
 			INode objNode = (INode) Naming.lookup("//"+prevIp+"/Node"); 
@@ -103,7 +103,7 @@ public class Node extends UnicastRemoteObject implements INode {
 	
 	public boolean contactNext(){
 		try {
-			INameServer obj1 = (INameServer) Naming.lookup ("//"+"localhost"+"/LNS");
+			INameServer obj1 = (INameServer) Naming.lookup ("//"+"66.66.66.66"+"/LNS");
 			nextId = obj1.getNext(id);
 			String nextIp = obj1.lookUp(nextId);
 			INode objNode = (INode) Naming.lookup("//"+nextIp+"/Node"); 
@@ -121,7 +121,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		return true;
 	}
 	
-	public void initialise(){
+	/*public void initialise(){
 		Socket sock;
 		try {
 			sock = new Socket("test",13267);
@@ -134,17 +134,17 @@ public class Node extends UnicastRemoteObject implements INode {
 			System.out.println("IOException: " + e);
 			e.printStackTrace();
 		}		
-	}
+	}*/
 	
 	public void main (String [] args) {
 		
 		Scanner scanner = new Scanner (System.in);
 		
 		try {
-			INameServer obj = (INameServer) Naming.lookup ("//"+"localhost"+"/LNS");
+			INameServer obj = (INameServer) Naming.lookup ("//"+"66.66.66.66"+"/LNS");
 			boolean flag = true;
 			do {
-				System.out.print ("\n[1]: look up ip\n[2]: add ip\n[0]: quit\n > ");
+				System.out.print ("\n[1]: look up ip\n[2]: add ip\n[3]: Delete id\n[4]: Contact nodes\n[0]: quit\n > ");
 				int choise = scanner.nextInt();
 				scanner.nextLine();
 				switch (choise) {
@@ -160,6 +160,12 @@ public class Node extends UnicastRemoteObject implements INode {
 					System.out.println(ip);
 					obj.add(id, ip);
 					break;
+				case 3:
+					System.out.println("\n id: ");
+					id = scanner.nextInt();
+					System.out.println("Delete: "+ obj.delete(id));
+				case 4:
+					System.out.println("Contact: "+ contactPrevious());	
 				case 0:
 					flag = false;
 					break;
