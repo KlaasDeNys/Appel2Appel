@@ -49,15 +49,5 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		return false;
 	}
 
-	@Override
-	public int getPrev(int id) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getNext(int id) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+	
 }
