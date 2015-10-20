@@ -4,6 +4,8 @@ package NameServer;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * 
@@ -49,5 +51,39 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		return false;
 	}
 
+	public int getPrev (int id) {
+		if (!nameRegister.containsKey (id) || nameRegister.size() <= 1) return 0;
+		
+		Set <Integer> keySet = nameRegister.keySet ();
+		Iterator <Integer> i = keySet.iterator();
+		
+		int prevId = i.next();
+		if (prevId == id) {	// When the given id is the first element of the map...
+			for (;i.hasNext();prevId = i.next());
+			return prevId;	// We must get the latest element of the set.
+		}
+		
+		while (true) {
+			int temp = i.next();
+			if (temp == id) return prevId;
+			prevId = temp;
+		}
+	}
 	
+	public int getNext (int id) {
+		if (!nameRegister.containsKey (id) || nameRegister.size() <= 1) return 0;
+		
+		Set <Integer> keySet = nameRegister.keySet ();
+		Iterator <Integer> i = keySet.iterator();
+		
+		int firstId = i.next();
+		int currentId = firstId;
+		
+		while (true) {
+			if (!i.hasNext()) return firstId;
+			if (currentId == id) return i.next();
+			currentId = i.next();
+		}
+	}
+
 }
