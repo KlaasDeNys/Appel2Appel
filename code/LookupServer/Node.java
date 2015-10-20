@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.Scanner;
 
 import NameServer.INameServer;
+import NameServer.INode;
 
 
 /**
@@ -32,11 +33,11 @@ public class Node extends UnicastRemoteObject implements INode {
 	private static final long serialVersionUID = 1L;
 	
 	public Node () throws RemoteException{
-		
+		super();
 	}
 	
 	public int generateId() {		//Generate an ID.
-		Date date = new Date(15,10,15);		//Based on the date, we generate an ID.		
+		Date date = new Date(16,10,15);		//Based on the date, we generate an ID.		
 		String stringDate = date.toString();
 		id = keyHash(stringDate);		//Generate the ID.
 		//String ip = "192.1.1.1";
@@ -78,20 +79,26 @@ public class Node extends UnicastRemoteObject implements INode {
 	
 	public boolean contactPrevious(){
 		try {
-			INameServer obj1 = (INameServer) Naming.lookup ("//"+"66.66.66.66"+"/LNS");
+			INameServer obj1 = (INameServer) Naming.lookup ("//"+"10.1.1.1"+"/LNS");
 			prevId = obj1.getPrev(id);
+			System.out.println("PrevId: " +prevId);
 			String prevIp = obj1.lookUp(prevId);
-			INode objNode = (INode) Naming.lookup("//"+prevIp+"/Node"); 
+			System.out.println("PrevIP: " +prevIp);
+			INode objNode = (INode) Naming.lookup("//"+prevIp+"/Node"); //fout
+			System.out.println("Gelukt!");
 			objNode.changeNext(id);
 		} catch (MalformedURLException e) {
 			System.out.println("Client MalformedURLException: " + e);
 			e.printStackTrace();
+			return false;
 		} catch (RemoteException e) {
 			System.out.println("Client RemoteException: " + e);
 			e.printStackTrace();
+			return false;
 		} catch (NotBoundException e) {
 			System.out.println("Client NotBoundException: " + e);
 			e.printStackTrace();
+			return false;
 		}			
 		return true;
 	}
@@ -103,7 +110,7 @@ public class Node extends UnicastRemoteObject implements INode {
 	
 	public boolean contactNext(){
 		try {
-			INameServer obj1 = (INameServer) Naming.lookup ("//"+"66.66.66.66"+"/LNS");
+			INameServer obj1 = (INameServer) Naming.lookup ("//"+"10.1.1.1"+"/LNS");
 			nextId = obj1.getNext(id);
 			String nextIp = obj1.lookUp(nextId);
 			INode objNode = (INode) Naming.lookup("//"+nextIp+"/Node"); 
@@ -141,7 +148,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		Scanner scanner = new Scanner (System.in);
 		
 		try {
-			INameServer obj = (INameServer) Naming.lookup ("//"+"66.66.66.66"+"/LNS");
+			INameServer obj = (INameServer) Naming.lookup ("//"+"10.1.1.1"+"/LNS");
 			boolean flag = true;
 			do {
 				System.out.print ("\n[1]: look up ip\n[2]: add ip\n[3]: Delete id\n[4]: Contact nodes\n[0]: quit\n > ");

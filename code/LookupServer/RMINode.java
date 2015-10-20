@@ -10,11 +10,12 @@ public class RMINode {
 	
 	public static void main (String [] args) {
 		try {
+			System.out.println("System online");
 			Node obj = new Node();
 			obj.main(args);
-			Registry registry = LocateRegistry.createRegistry (1098);
+			Registry registry = LocateRegistry.createRegistry (1099);
 			registry.bind("Node", obj);
-			System.out.println("System online");
+			
 		} catch (Exception e) {
 			System.out.println(e);
 		}

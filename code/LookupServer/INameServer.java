@@ -17,6 +17,6 @@ public interface INameServer extends Remote{
 
 	String lookUp (int id) throws RemoteException;	// Give the ip of the specified node.
 	String add (int id, String adr) throws RemoteException;	// Add a node by the given addres.
-	int getPrev(int id);
-	int getNext(int id);
+	int getPrev(int id)throws RemoteException;
+	int getNext(int id)throws RemoteException;
 }
