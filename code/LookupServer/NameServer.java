@@ -17,7 +17,11 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 	private static final long serialVersionUID = 1L;
 	private HashMap <Integer, String> nameRegister;	// Here we will map te ip's to the id's
 
+<<<<<<< HEAD
 	NameServer() throws RemoteException {	// default constructor.
+=======
+	LookupServer() throws RemoteException {	// default constructor.
+>>>>>>> origin/master
 		super();
 		nameRegister = new HashMap <Integer, String> ();
 	}
