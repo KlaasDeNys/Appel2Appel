@@ -26,7 +26,6 @@ public class NodeMain {
 		node.shutdown ();
 		
 		scanner.close();
-		
-		// Hier zou deze applicatie vanzelf moeten afsluiten, maar ik weet nog niet hoe(r).
+		System.exit (0);
 	}
 }

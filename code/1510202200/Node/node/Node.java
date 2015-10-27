@@ -49,6 +49,7 @@ public class Node extends UnicastRemoteObject implements INode {
 	public void changePrevNode (int id, String ip) {	// Remote function to change the previous node of this node.
 		idPrev = id;
 		ipPrev = ip;
+		System.out.println ("Node message: priv node is changed: id: " + id + " ip: " + ip);
 	}
 	
 	public void shutdown () {	// Call to shut down this node.
@@ -194,8 +195,6 @@ public class Node extends UnicastRemoteObject implements INode {
 			System.out.println("Node: setPrevNode (): NotBoundException:\n" + e);
 			return false;
 		}
-		
-		System.out.println ("Node message: prev node: ip: " + ipPrev + " id: " + idPrev);
 		
 		try {
 			INode prevNode = (INode) Naming.lookup("//" + ipPrev + "/node");
