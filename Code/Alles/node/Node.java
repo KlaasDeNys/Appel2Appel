@@ -272,43 +272,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		return local;
 	}
 
-	
-
-	public int lookupFile(String filename) {
-		try {
-			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
-			return lns.getNode(filename);
-
-		} catch (MalformedURLException e) {
-			System.out.println("Node.lookupFile (): MalformedURLException\n\n" + e);
-		} catch (RemoteException e) {
-			System.out.println("Node.lookupFile (): RemoteException\n\n" + e);
-		} catch (NotBoundException e) {
-			System.out.println("Node.lookupFile (): NotBoundException\n\n" + e);
-		}
-		return 0;
-	}
-
-	
-
-	// __________________________________________________________________________
-	
-
-	public HashMap<String, Integer> listReplicaFiles(final File folder1) {
-		HashMap<String, Integer> replica = new HashMap<String, Integer>();
-		for (final File fileEntry : folder1.listFiles()) {
-			if (fileEntry.isDirectory()) {
-				listReplicaFiles(fileEntry);
-			} else {
-				replica.put(fileEntry.getName(), hasher(fileEntry.getName()));
-			}
-		}
-
-		return replica;
-	}
-	
-	
-	public static  void compare(ArrayList<String> al1,ArrayList<String> al2) throws IOException{
+	public static void compare(ArrayList<String> al1,ArrayList<String> al2) throws IOException{
 
         //Check copy to node
         ArrayList<Integer> al3= new ArrayList<Integer>();
@@ -372,84 +336,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 	}
 
-	public static void copyToNode(String filename) throws IOException {
-		String ipfilenode = "";
-		try {
-			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
-			int idnode = lns.getNode(filename);
-			if (idnode == hasher(name)) {
-				idnode = idNext;
-			}
-			ipfilenode = lns.lookUp(idnode);
-			System.out.println(ipfilenode + ", kopieren wordt gestart, " + filename);
-		} catch (MalformedURLException e) {
-			System.out.println("Node.getNode (): MalformedURLException\n\n" + e);
-		} catch (RemoteException e) {
-			System.out.println("Node.getNode (): RemoteException\n\n" + e);
-		} catch (NotBoundException e) {
-			System.out.println("Node.getNode (): NotBoundException\n\n" + e);
-		}
-
-		try {
-			ServerSocket servsock = new ServerSocket (9876);
-			File myFile = new File (pathLokaal + filename);
-			INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
-			
-			Thread getFileThread = new Thread () {
-				public void run () {
-					try {
-						node.getFile(9876, ip(), filename);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			};
-			getFileThread.start();
-			
-			Socket sock = servsock.accept();
-			byte [] mybytearray = new byte [(int) myFile.length()];
-			FileInputStream fis = new FileInputStream (myFile);
-			BufferedInputStream bis = new BufferedInputStream (fis);
-			bis.read (mybytearray, 0, mybytearray.length);
-			OutputStream os = sock.getOutputStream();
-			os.write(mybytearray, 0, mybytearray.length);
-			while(getFileThread.isAlive());
-			os.flush();			
-			servsock.close();
-			bis.close();
-		} catch (MalformedURLException | RemoteException | NotBoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-	public void run() throws InterruptedException, IOException {
-		boolean flag = true;
-		System.out.println("Thread control files started...");
-		try{
-		    Thread.sleep(5000);	//Checks every 5s
-		} catch(Exception e){
-		   System.out.println("Thread is ended! The error is " + e.getMessage());
-		}
-		if(!flag)		//Only when the flag is false, the thread ends
-		   return;
-		else
-		   run();
-		final File folder = new File(pathLokaal);
-		/*HashMap<String, Integer> local = listLocalFiles(folder);
-		final File folder1 = new File(pathReplica);
-		HashMap<String, Integer> replica = listReplicaFiles(folder1);
-		*/
-		System.out.println("Contents of local files: " + local);
-		System.out.println("Contents of replica files: " + replica);
-		doubles(local,replica);
-	}
 	
-	
-
 	/*************************
 	  RMI methods
 	 *************************/
@@ -544,5 +431,115 @@ public class Node extends UnicastRemoteObject implements INode {
 		for (endIndex = 0; (sIn.charAt(endIndex) >= '0' && sIn.charAt(endIndex) <= '9')
 				|| sIn.charAt(endIndex) == '.'; endIndex++);
 		return sIn.substring(0, endIndex);
+	}
+	
+	
+	/*************************
+	  not used methods
+	 *************************/
+	
+	public int lookupFile(String filename) {
+		try {
+			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
+			return lns.getNode(filename);
+
+		} catch (MalformedURLException e) {
+			System.out.println("Node.lookupFile (): MalformedURLException\n\n" + e);
+		} catch (RemoteException e) {
+			System.out.println("Node.lookupFile (): RemoteException\n\n" + e);
+		} catch (NotBoundException e) {
+			System.out.println("Node.lookupFile (): NotBoundException\n\n" + e);
+		}
+		return 0;
+	}
+	
+	public HashMap<String, Integer> listReplicaFiles(final File folder1) {
+		HashMap<String, Integer> replica = new HashMap<String, Integer>();
+		for (final File fileEntry : folder1.listFiles()) {
+			if (fileEntry.isDirectory()) {
+				listReplicaFiles(fileEntry);
+			} else {
+				replica.put(fileEntry.getName(), hasher(fileEntry.getName()));
+			}
+		}
+
+		return replica;
+	}
+	
+	public static void copyToNode(String filename) throws IOException {
+		String ipfilenode = "";
+		try {
+			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
+			int idnode = lns.getNode(filename);
+			if (idnode == hasher(name)) {
+				idnode = idNext;
+			}
+			ipfilenode = lns.lookUp(idnode);
+			System.out.println(ipfilenode + ", kopieren wordt gestart, " + filename);
+		} catch (MalformedURLException e) {
+			System.out.println("Node.getNode (): MalformedURLException\n\n" + e);
+		} catch (RemoteException e) {
+			System.out.println("Node.getNode (): RemoteException\n\n" + e);
+		} catch (NotBoundException e) {
+			System.out.println("Node.getNode (): NotBoundException\n\n" + e);
+		}
+
+		try {
+			ServerSocket servsock = new ServerSocket (9876);
+			File myFile = new File (pathLokaal + filename);
+			INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
+			
+			Thread getFileThread = new Thread () {
+				public void run () {
+					try {
+						node.getFile(9876, ip(), filename);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			};
+			getFileThread.start();
+			
+			Socket sock = servsock.accept();
+			byte [] mybytearray = new byte [(int) myFile.length()];
+			FileInputStream fis = new FileInputStream (myFile);
+			BufferedInputStream bis = new BufferedInputStream (fis);
+			bis.read (mybytearray, 0, mybytearray.length);
+			OutputStream os = sock.getOutputStream();
+			os.write(mybytearray, 0, mybytearray.length);
+			while(getFileThread.isAlive());
+			os.flush();			
+			servsock.close();
+			bis.close();
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
+	public void run() throws InterruptedException, IOException {
+		boolean flag = true;
+		System.out.println("Thread control files started...");
+		try{
+		    Thread.sleep(5000);	//Checks every 5s
+		} catch(Exception e){
+		   System.out.println("Thread is ended! The error is " + e.getMessage());
+		}
+		if(!flag)		//Only when the flag is false, the thread ends
+		   return;
+		else
+		   run();
+		final File folder = new File(pathLokaal);
+		/*HashMap<String, Integer> local = listLocalFiles(folder);
+		final File folder1 = new File(pathReplica);
+		HashMap<String, Integer> replica = listReplicaFiles(folder1);
+		*/
+		System.out.println("Contents of local files: " + local);
+		System.out.println("Contents of replica files: " + replica);
+		doubles(local,replica);
 	}
 }

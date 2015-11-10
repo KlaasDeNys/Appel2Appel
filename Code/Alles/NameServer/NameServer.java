@@ -6,86 +6,73 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-/**
- * 
- * @author Jens
- * @since 14/10/2015
- *
- */
-
 public class NameServer extends UnicastRemoteObject implements INameServer {
 
 	private static final long serialVersionUID = 1L;
-	private HashMap<Integer, String> nameRegister; // Here we will map te ip's
-													// to the id's
+	private HashMap <Integer, String> nameRegister; // key: node's id; val: node's ip
 
 	NameServer() throws RemoteException { // default constructor.
-
-		// LookupServer() throws RemoteException { // default constructor.
-
 		super();
-		nameRegister = new HashMap<Integer, String>();
+		nameRegister = new HashMap <Integer, String>();
 	}
 
 	public String lookUp(int id) { // return the ip by the given id.
-		System.out.print("NameServer: lookUp " + id);
+		System.out.print("NameServer: lookUp " + id);	// -----report
 		String ip = nameRegister.get(id);
-		System.out.println("\tip: " + ip);
-		return ip;
+		System.out.println("\tip: " + ip);	// ----report
+		return ip;	// When the given id isn't represented in the system => null will be returned.
 	}
 
-	public boolean add(int id, String adr) { // Add a node to the map.
-		System.out.println("NameServer: add procedure\tid: " + id + "\tip: " + adr);
+	public boolean add(int id, String adr) { // Add a node to the system; id => node's id; adr => node's ip
+		System.out.println("NameServer: add procedure\tid: " + id + "\tip: " + adr);	// ----report
 		if (nameRegister.containsKey(id)) {
-			return false;
+			return false;	// When the id is already represented in the system.
 		}
 		nameRegister.put(id, adr);
 
-		return true;
+		return true;	// When success
 	}
 
-	public boolean delete(int id) {
+	public boolean delete(int id) {	// Delete a node out of the system.
 		System.out.println("NameServer: delete " + id);
 		if (nameRegister.containsKey(id)) {
 			nameRegister.remove(id);
-			return true;
+			return true;	// Return true when success.
 		}
-		return false;
+		return false;	// return false, when the given node didn't exist.
 	}
 
-	public int getPrev(int id) {
-		System.out.print("NameServer: " + id + " entered getPrev\tresult: ");
+	public int getPrev(int id) {	// Returns the lower neighbor of the given node
+		System.out.print("NameServer: " + id + " entered getPrev\tresult: ");	// ----report
 		if (!nameRegister.containsKey(id) || nameRegister.size() <= 1) {
-			System.out.println();
-			return 0;
+			System.out.println("no lower neighbor detected.");	// ----report
+			return 0;	// When failure
 		}
 
-		Set<Integer> keySet = nameRegister.keySet();
+		Set<Integer> keySet = nameRegister.keySet();	
 		Iterator<Integer> i = keySet.iterator();
 
 		int prevId = i.next();
-		if (prevId == id) { // When the given id is the first element of the
-							// map...
-			for (; i.hasNext(); prevId = i.next())
-				;
+		if (prevId == id) { // When the given id is the first element of the map...
+			for (; i.hasNext(); prevId = i.next());
 			System.out.println(prevId);
-			return prevId; // We must get the latest element of the set.
+			return prevId; // The lates id is the lower neighbor
 		}
 
-		while (true) {
+		while (true) {	// Check all the node's
 			int temp = i.next();
 			if (temp == id) {
-				System.out.println(prevId);
-				return prevId;
+				System.out.println(prevId);	// ----report
+				return prevId;	// Return the result
 			}
 			prevId = temp;
 		}
 	}
 
-	public int getNext(int id) {
-		System.out.println("NameServer: " + id + " entered getNext\tresult: ");
+	public int getNext(int id) {	// Returns the upper neighbor of the given node
+		System.out.println("NameServer: " + id + " entered getNext\tresult: ");	// ----report
 		if (!nameRegister.containsKey(id) || nameRegister.size() <= 1)
-			return 0;
+			return 0;	// When their is no upper neighbor
 
 		Set<Integer> keySet = nameRegister.keySet();
 		Iterator<Integer> i = keySet.iterator();
@@ -94,22 +81,22 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		int currentId = firstId;
 
 		while (true) {
-			if (!i.hasNext()) {
-				System.out.println(firstId);
-				return firstId;
+			if (!i.hasNext()) {	// When the given node is the latest one ...
+				System.out.println(firstId);	// ----report
+				return firstId;	// The first node is the upper neighbor.
 			}
-			if (currentId == id) {
+			if (currentId == id) {	// If the given node is found in the set:
 				int result = i.next();
-				System.out.println(result);
+				System.out.println(result);	// ----report
 				return result;
 			}
 			currentId = i.next();
 		}
 	}
 	
-	public int getNode(String filename) throws RemoteException {
-		int hashid = Math.abs(filename.hashCode() % 32768);
-		System.out.print("NameServer: " + filename + " entered getNode\tresult:\thash: " + hashid + ", IdNode: ");
+	public int getNode(String filename) throws RemoteException {	// Calculate the rightful owner of the given file.
+		int hashid = Math.abs(filename.hashCode() % 32768);	// Calc the hash of the file.
+		System.out.print("NameServer: " + filename + " entered getNode\tresult:\thash: " + hashid + ", IdNode: "); // ----report
 		
 		Set<Integer> keySet = nameRegister.keySet();
 		Iterator<Integer> i = keySet.iterator();
@@ -118,14 +105,14 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		int currentId = firstId;
 
 		while (true) {
-			if (!i.hasNext()) {
-				System.out.println(firstId);
+			if (!i.hasNext()) {	// If their is no id higher than the hash.
+				System.out.println(firstId);	// ----report
 				return firstId;
 			}
 			if (currentId >= hashid) {
 				int result = i.next();
-				System.out.println(result);
-				return result;
+				System.out.println(result);	// ----report
+				return result;	// The rightful owner is the one with the smallest id higher than the hash.
 			}
 			currentId = i.next();
 		}

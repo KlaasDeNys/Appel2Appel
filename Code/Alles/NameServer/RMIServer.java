@@ -10,22 +10,6 @@ import java.net.UnknownHostException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
  
- /**
-  *
-  * Main classe for Name Server.
-  *
-  * Contains the following methods:
-  *		- main (String [] args)
-  *			When we want to run the name server, we have to start this method. First the RMI service will be launched
-  *				next, the multicast service will be runned.
-  *
-  *		- 
-  * 
-  * Requires following classes:
-  *		- NameServer
-  *
-  */
-
 public class RMIServer {
 	
 	private static final int RMI_PORT = 1099;	// Port for RMI service
