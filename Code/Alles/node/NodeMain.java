@@ -1,13 +1,14 @@
 package node;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
 
 public class NodeMain {
-	public static void main (String [] args) throws RemoteException {
-		Node node = new Node ("node2");
+	public static void main (String [] args) throws InterruptedException, IOException {
+		Node node = new Node ("klaas");
 		
 		while (node.bootstrap);
 		
@@ -18,6 +19,7 @@ public class NodeMain {
 			System.out.println ("Node message: RMI: Exception:\n" + e);
 		}
 		System.out.println (node.lookupFile("test"));
+		//node.deletefile("c://replica/test.txt");
 		System.out.println ("Press 0 to shut down\n > ");
 		Scanner scanner = new Scanner (System.in);
 		
