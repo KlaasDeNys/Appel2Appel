@@ -32,16 +32,16 @@ import java.util.concurrent.TimeUnit;
 
 public class Node extends UnicastRemoteObject implements INode {
 	private static final long serialVersionUID = 1L;
-	private String name;
-	private String lnsIp;
+	private static String name;
+	private static String lnsIp;
 
-	private int idNext;
+	private static int idNext;
 	private String ipNext;
 	private int idPrev;
 	private String ipPrev;
 
-	private String pathLokaal = "c://lokaal/";
-	private String pathReplica = "c://replica/";
+	private static String pathLokaal = "c://lokaal/";
+	private static String pathReplica = "c://replica/";
 	public static HashMap<String, Integer> local = new HashMap<String, Integer>();
 	public static HashMap<String, Integer> replica = new HashMap<String, Integer>();
 
@@ -65,9 +65,9 @@ public class Node extends UnicastRemoteObject implements INode {
 		//HashMap<String, Integer> local = listLocalFiles(folder);
 		//final File folder1 = new File(pathReplica);
 		//HashMap<String, Integer> replica = listReplicaFiles(folder1);
-	    System.out.println("Contents of local files: " + local);
-	    System.out.println("Contents of replica files: " + replica);
-	    doubles(local,replica);
+	    //System.out.println("Contents of local files: " + local);
+	    //System.out.println("Contents of replica files: " + replica);
+	    //doubles(local,replica);
 	}
 
 	public void changeNextNode(int id, String ip) { // Remote function to change
@@ -110,7 +110,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 	}
 
-	private int hasher(String hashName) { // Make a hash from the given String
+	private static int hasher(String hashName) { // Make a hash from the given String
 		return Math.abs(hashName.hashCode() % 32768);
 	}
 
@@ -238,7 +238,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		return false;
 	}
 
-	private String ip() { // Returns the ip of this system.
+	private static String ip() { // Returns the ip of this system.
 		InetAddress address;
 		String hostIp = "";
 		try {
@@ -295,7 +295,7 @@ public class Node extends UnicastRemoteObject implements INode {
 	}
 
 	// __________________________________________________________________________
-	public HashMap<String, Integer> listLocalFiles(final File folder) {
+	public static HashMap<String, Integer> listLocalFiles(final File folder) {
 		HashMap<String, Integer> local = new HashMap<String, Integer>();
 		for (final File fileEntry : folder.listFiles()) {
 			if (fileEntry.isDirectory()) {
@@ -320,7 +320,7 @@ public class Node extends UnicastRemoteObject implements INode {
 
 		return replica;
 	}
-	public void doubles(HashMap<String, Integer> local,HashMap<String, Integer> replica ) throws InterruptedException, IOException
+	public static void doubles(HashMap<String, Integer> local,HashMap<String, Integer> replica ) throws InterruptedException, IOException
 	{
 		TimeUnit.SECONDS.sleep(10);
 		final File folder = new File(pathLokaal);
@@ -330,10 +330,35 @@ public class Node extends UnicastRemoteObject implements INode {
 		compare(localList,localNewList);
 	    System.out.println("Contents of local files: " + localList);
 	    System.out.println("Contents of local new files: " + localNewList); 
+	    
 	    //local= hash( localNewList);
+	    for(int i = 0; i < localNewList.size(); i++)
+	    {
+	    	String var = localNewList.get(i);
+	    	local.put(var,hasher(var));
+	    }
+	    System.out.println("dit is de nieuwe local: "+local);
+	    
+	    
+	    final File folder1 = new File(pathReplica);
+		HashMap<String, Integer> replicaNew = listLocalFiles(folder1);
+		ArrayList<String> replicaNewList = new ArrayList<String>(replicaNew.keySet());
+		ArrayList<String> replicaList = new ArrayList<String>(local.keySet());
+		compare(replicaList,replicaNewList);
+	    System.out.println("Contents of replica files: " + replicaList);
+	    System.out.println("Contents of replica new files: " + replicaNewList);    
+	    for(int i = 0; i < replicaNewList.size(); i++)
+	    {
+	    	String var = replicaNewList.get(i);
+	    	replica.put(var,hasher(var));
+	    }
+	    System.out.println("dit is de nieuwe replica: ");
+	    System.out.println(replica);
+
+
 	}
 	
-	public  void compare(ArrayList<String> al1,ArrayList<String> al2) throws IOException{
+	public static  void compare(ArrayList<String> al1,ArrayList<String> al2) throws IOException{
 
         //Check copy to node
         ArrayList<Integer> al3= new ArrayList<Integer>();
@@ -365,12 +390,39 @@ public class Node extends UnicastRemoteObject implements INode {
 	  		{
 	  			String verwijder = al1.get(ii);
 	  			System.out.println("Verwijder: "+verwijder);
-	  			//deletefile(verwijder);
+	  			String ipfilenode = "";
+	  			try {
+	  				INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
+	  				int idnode = lns.getNode(verwijder);
+	  				if (idnode == hasher(name)) {
+	  					idnode = idNext;
+	  				}
+	  				ipfilenode = lns.lookUp(idnode);
+	  				System.out.println(ipfilenode + ", verwijderen wordt gestart, " + verwijder);
+	  			} catch (MalformedURLException e) {
+	  				System.out.println("Node.deletefile (): MalformedURLException\n\n" + e);
+	  			} catch (RemoteException e) {
+	  				System.out.println("Node.deletefile (): RemoteException\n\n" + e);
+	  			} catch (NotBoundException e) {
+	  				System.out.println("Node.deletefile (): NotBoundException\n\n" + e);
+	  			}
+	  			try{
+	  				INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
+	  				try {
+						node.deletefile(verwijder);
+					} catch (IOException e) {
+						
+						e.printStackTrace();
+					}
+	  					
+	  			}catch(MalformedURLException | RemoteException | NotBoundException e){
+					e.printStackTrace();
+				}
 	  		}
 		}
 	}
 
-	public void copyToNode(String filename) throws IOException {
+	public static void copyToNode(String filename) throws IOException {
 		String ipfilenode = "";
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
@@ -456,8 +508,9 @@ public class Node extends UnicastRemoteObject implements INode {
 			FileOutputStream fos = new FileOutputStream(
 					pathReplica+ filename);
 			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			int current = 0;
 			int bytesRead = is.read(mybytearray, 0, mybytearray.length);
-			int current = bytesRead;
+			current = bytesRead;
 			while (current < is.available()) {
 				bytesRead = is.read(mybytearray, current, (mybytearray.length - current));
 				if (bytesRead >= 0)

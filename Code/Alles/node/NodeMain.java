@@ -9,7 +9,7 @@ import java.util.Scanner;
 public class NodeMain {
 	public static void main (String [] args) throws InterruptedException, IOException {
 		Node node = new Node ("klaas");
-		
+		(new ThreadFiles()).start();
 		while (node.bootstrap);
 		
 		try {
@@ -19,7 +19,6 @@ public class NodeMain {
 			System.out.println ("Node message: RMI: Exception:\n" + e);
 		}
 		System.out.println (node.lookupFile("test"));
-		//node.deletefile("c://replica/test.txt");
 		System.out.println ("Press 0 to shut down\n > ");
 		Scanner scanner = new Scanner (System.in);
 		
