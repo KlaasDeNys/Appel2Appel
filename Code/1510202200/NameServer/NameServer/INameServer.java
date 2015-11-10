@@ -1,4 +1,3 @@
-package NameServer;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -17,7 +16,6 @@ public interface INameServer extends Remote{
 
 	String lookUp (int id) throws RemoteException;	// Give the ip of the specified node.
 	boolean add (int id, String adr) throws RemoteException;	// Add a node by the given addres.
-	int getPrev(int id)throws RemoteException;
-	int getNext(int id)throws RemoteException;
-	int getNode(String filename)throws RemoteException;
+	int getPrev(int id) throws RemoteException;
+	int getNext(int id) throws RemoteException;
 }
