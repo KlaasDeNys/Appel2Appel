@@ -1,5 +1,6 @@
 package node;
 
+import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -9,5 +10,5 @@ public interface INode extends Remote {
 	
 	
 	void deletefile (String filename)throws RemoteException;
-	void getFile(String ip, String filename)throws RemoteException;
+	void getFile (int portNr, String ip, String file) throws RemoteException, IOException;
 }

@@ -1,12 +1,13 @@
 package node;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
 
 public class NodeMain {
-	public static void main (String [] args) throws RemoteException, InterruptedException {
+	public static void main (String [] args) throws InterruptedException, IOException {
 		Node node = new Node ("klaas");
 		
 		while (node.bootstrap);

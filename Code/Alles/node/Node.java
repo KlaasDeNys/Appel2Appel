@@ -2,12 +2,20 @@ package node;
 
 import NameServer.INameServer;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.rmi.Naming;
@@ -39,7 +47,7 @@ public class Node extends UnicastRemoteObject implements INode {
 
 	public boolean bootstrap;
 
-	public Node(String name) throws RemoteException, InterruptedException { // Constructor
+	public Node(String name) throws InterruptedException, IOException { // Constructor
 		super();
 		bootstrap = true;
 		this.name = name; // Save name of node.
@@ -312,7 +320,7 @@ public class Node extends UnicastRemoteObject implements INode {
 
 		return replica;
 	}
-	public void doubles(HashMap<String, Integer> local,HashMap<String, Integer> replica ) throws InterruptedException
+	public void doubles(HashMap<String, Integer> local,HashMap<String, Integer> replica ) throws InterruptedException, IOException
 	{
 		TimeUnit.SECONDS.sleep(10);
 		final File folder = new File(pathLokaal);
@@ -325,7 +333,7 @@ public class Node extends UnicastRemoteObject implements INode {
 	    //local= hash( localNewList);
 	}
 	
-	public  void compare(ArrayList<String> al1,ArrayList<String> al2){
+	public  void compare(ArrayList<String> al1,ArrayList<String> al2) throws IOException{
 
         //Check copy to node
         ArrayList<Integer> al3= new ArrayList<Integer>();
@@ -346,6 +354,7 @@ public class Node extends UnicastRemoteObject implements INode {
 			{
 	  			String toevoegen = al2.get(i);
 	  			copyToNode(toevoegen);
+	  			
 	  			System.out.println("toevoegen: "+toevoegen);
 			}
         }
@@ -361,7 +370,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 	}
 
-	public void copyToNode(String filename) {
+	public void copyToNode(String filename) throws IOException {
 		String ipfilenode = "";
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
@@ -380,19 +389,42 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 
 		try {
-			INode copynode = (INode) Naming.lookup("//" + ipfilenode + "/node");
-			copynode.getFile(ip(), filename);
-
-		} catch (MalformedURLException e) {
-			System.out.println("Node: getFile (): MalformedURLException: (to node)\n" + e);
-		} catch (RemoteException e) {
-			System.out.println("Node: getFile (): RemoteException: (to node)\n" + e);
-		} catch (NotBoundException e) {
-			System.out.println("Node: getFile (): NotBoundException: (to node)\n" + e);
+			ServerSocket servsock = new ServerSocket (9876);
+			File myFile = new File (pathLokaal + filename);
+			INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
+			
+			Thread getFileThread = new Thread () {
+				public void run () {
+					try {
+						node.getFile(9876, ip(), filename);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			};
+			getFileThread.start();
+			
+			Socket sock = servsock.accept();
+			byte [] mybytearray = new byte [(int) myFile.length()];
+			FileInputStream fis = new FileInputStream (myFile);
+			BufferedInputStream bis = new BufferedInputStream (fis);
+			bis.read (mybytearray, 0, mybytearray.length);
+			OutputStream os = sock.getOutputStream();
+			os.write(mybytearray, 0, mybytearray.length);
+			while(getFileThread.isAlive());
+			os.flush();			
+			servsock.close();
+			bis.close();
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 	}
-	 public void run() throws InterruptedException {
+	 public void run() throws InterruptedException, IOException {
 		   boolean flag = true;
 		   System.out.println("Thread control files started...");
 		   try{
@@ -415,10 +447,33 @@ public class Node extends UnicastRemoteObject implements INode {
 		    doubles(local,replica);
 	   }
 	
-	@Override
-	public void getFile(String ip, String filename) {
-		// TODO Auto-generated method stub
 
+	public void getFile(int portNr, String ip, String filename) {
+		try {
+			Socket sock = new Socket(ip, portNr);
+			byte[] mybytearray = new byte[6022386];
+			InputStream is = sock.getInputStream();
+			FileOutputStream fos = new FileOutputStream(
+					pathReplica+ filename);
+			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			int bytesRead = is.read(mybytearray, 0, mybytearray.length);
+			int current = bytesRead;
+			while (current < is.available()) {
+				bytesRead = is.read(mybytearray, current, (mybytearray.length - current));
+				if (bytesRead >= 0)
+					current += bytesRead;
+			}
+			bos.write(mybytearray, 0, current);
+			bos.flush();
+
+			fos.close();
+			sock.close();
+			bos.close();
+		} catch (IOException e) {
+			System.out.println("IOException in getFile():\n" + e);
+		}
 	}
+
+
 
 }
