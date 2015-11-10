@@ -81,7 +81,7 @@ public class RMIServer {
 			aSocket.send(request);
 
 		} catch (SocketException e) {
-			System.out.println("RMIServer sendIp error:\nSocketException"");
+			System.out.println("RMIServer sendIp error:\nSocketException");
 		} catch (IOException e) {
 			System.out.println("RMIServer sendIp error:\nIOException");
 		}

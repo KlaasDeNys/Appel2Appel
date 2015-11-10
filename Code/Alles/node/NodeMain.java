@@ -6,27 +6,42 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
 
+/*
+ *
+ *	NodeMain have the usasge to launch te RMI service of a node.
+ *
+ *	Their is only a main methode.
+ *
+ */
+
 public class NodeMain {
 	public static void main (String [] args) throws InterruptedException, IOException {
-		Node node = new Node ("klaas");
+		Node node = new Node ("klaas");	// Create a new Node, with the given name.
+		while (node.bootstrap);	// The RMI service may only launch when the node has started up for 100 %
 		(new ThreadFiles()).start();
-		while (node.bootstrap);
 		
-		try {
+		try {	// Launch RMI
 			Registry registry = LocateRegistry.createRegistry(1099);
 			registry.bind ("node", node);
 		} catch (Exception e) {
 			System.out.println ("Node message: RMI: Exception:\n" + e);
 		}
 		System.out.println (node.lookupFile("test"));
-		System.out.println ("Press 0 to shut down\n > ");
-		Scanner scanner = new Scanner (System.in);
 		
-		scanner.next();
-		
-		node.shutdown ();
-		
-		scanner.close();
-		System.exit(0);
+		while (true) {	// Standard  work process.
+			System.out.println ("\n[0] shut down\n > ");
+			Scanner scanner = new Scanner (System.in);
+			int choise = scanner.nextInt();
+			switch (choise) {
+			case 0:		// Remove this node from the system.
+				node.shutdown ();
+				scanner.close();
+				System.exit(0);
+				break;
+			default:	// Wrong input.
+				System.out.println (choise + " is not an option.");
+				break;
+			}
+		}		
 	}
 }
