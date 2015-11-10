@@ -1,4 +1,5 @@
 package NameServer;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -8,84 +9,92 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-
-/**
- * 
- * @author Jens
- * @since 14/10/2015
- *
- */
+ 
+ /**
+  *
+  * Main classe for Name Server.
+  *
+  * Contains the following methods:
+  *		- main (String [] args)
+  *			When we want to run the name server, we have to start this method. First the RMI service will be launched
+  *				next, the multicast service will be runned.
+  *
+  *		- 
+  * 
+  * Requires following classes:
+  *		- NameServer
+  *
+  */
 
 public class RMIServer {
+	
+	private static final int RMI_PORT = 1099;	// Port for RMI service
+	private static final int MULTICAST_PORT = 8888;	// Port for multicast service
+	private static final String MULTICAST_IP = "224.2.2.3";	// Multicast messages wil be sended to this address 
+	private static final int TCP_PORT = 6789;	// Port use for TCP connections.
 	
 	public RMIServer () {
 		
 	}
 	
 	public static void main (String [] args) {
-		try {
+		try {		// launch RMI service
 			NameServer obj = new NameServer ();
-			Registry registry = LocateRegistry.createRegistry (1099);
+			Registry registry = LocateRegistry.createRegistry (RMI_PORT);
 			registry.bind("LNS", obj);
-			System.out.println("System online");
+			System.out.println("System online");	//----------------------------------------
 		} catch (Exception e) {
-			System.out.println("RMIServer RMI: " + e);
+			System.out.println("RMIServer main error:\nfailed to start RMI service.");
 		}
 		
 		MulticastSocket socket = null;
 		DatagramPacket inPacket = null;
 		byte [] inBuf = new byte [256];
 		
-		try {
-			// Prepare to join multicast group
-			socket = new MulticastSocket(8888);
-			InetAddress address = InetAddress.getByName("224.2.2.3");
+		try {	// share ip service
+			// Prepare to host multicast group
+			socket = new MulticastSocket(MULTICAST_PORT);
+			InetAddress address = InetAddress.getByName(MULTICAST_IP);
 			socket.joinGroup(address);
 			
-			while (true) {
+			while (true) {	// Run multicast service
 				inPacket = new DatagramPacket (inBuf, inBuf.length);
 				socket.receive(inPacket);
 				String msg = new String (inBuf, 0, inPacket.getLength());
 				sendIp (msg);
 			}
 		} catch (IOException e) {
-			System.out.println ("RMIServer Multicast: " + e);
+			System.out.println ("RMIServer main error:\nMulticast service failed.");
 		}
 	}
 	
-	private static void sendIp (String nodeIp) {
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	private static void sendIp (String nodeIp) {	// Send own ip to the node who use the given ip.
 		DatagramSocket aSocket = null;
-		try {
-			aSocket = new DatagramSocket(); // create socket
+		try {	// Send ip over TCP connection.
+			aSocket = new DatagramSocket();
 
-			String mes = ip ();
-			byte[] m = mes.getBytes();
-			InetAddress aHost = InetAddress.getByName(nodeIp);
+			String message = ip ();	// Server's ip is the message
+			byte[] bMessage = message.getBytes();
+			InetAddress aNode = InetAddress.getByName(nodeIp);
 
-			int serverPort = 6789;
-			DatagramPacket request = new DatagramPacket(m, mes.length(), aHost, serverPort);
-			aSocket.send(request); // send message
+			DatagramPacket request = new DatagramPacket(bMessage, message.length(), aNode, TCP_PORT);
+			aSocket.send(request);
 
 		} catch (SocketException e) {
-			System.out.println("SocketException: " + e.getMessage());
+			System.out.println("RMIServer sendIp error:\nSocketException"");
 		} catch (IOException e) {
-			System.out.println("IOException: " + e.getMessage());
+			System.out.println("RMIServer sendIp error:\nIOException");
 		}
 	}
 	
-	private static String ip () {
+	private static String ip () {	// Return ip of this device.
 		InetAddress address;
 		String hostIp = "";
 		try {
 			address = InetAddress.getLocalHost();
 			hostIp = address.getHostAddress();
 		} catch (UnknownHostException e) {
-			System.out.println ("UnknownHostException: " + e);
+			System.out.println ("RMIServer ip error:\nFailed to discover server ip");
 			return null;
 		}
 		return hostIp;
