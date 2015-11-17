@@ -50,10 +50,10 @@ public class Node extends UnicastRemoteObject implements INode {
 	public Node(String name) throws InterruptedException, IOException { // Constructor
 		super();
 		bootstrap = true;
-		this.name = name; // Save name of node.
+		Node.name = name; // Save name of node.
 		getNameServerIp(); // Look for the ip of the name Server.
 		while (!addToSystem()) { // Try to add this node to the system.
-			this.name = this.name + "_"; // When failed: auto change name, and
+			Node.name = Node.name + "_"; // When failed: auto change name, and
 											// start over.
 		}
 		setNextNode(); // Make connection with the next node.
@@ -242,7 +242,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		return false;
 	}
 
-	private boolean setNextNode() {
+	private boolean setNextNode() {	// when this function is called, this node would contact his upper neighbor.
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
 			idNext = lns.getNext(hasher(name));

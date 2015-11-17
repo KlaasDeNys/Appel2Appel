@@ -26,7 +26,7 @@ public class RMIServer {
 			NameServer obj = new NameServer ();
 			Registry registry = LocateRegistry.createRegistry (RMI_PORT);
 			registry.bind("LNS", obj);
-			System.out.println("System online");	//----------------------------------------
+			System.out.println("System online");	// -----report
 		} catch (Exception e) {
 			System.out.println("RMIServer main error:\nfailed to start RMI service.");
 		}
@@ -52,7 +52,7 @@ public class RMIServer {
 		}
 	}
 	
-	private static void sendIp (String nodeIp) {	// Send own ip to the node who use the given ip.
+	private static void sendIp (String nodeIp) {	// called in the main, when a node asks for the server's ip
 		DatagramSocket aSocket = null;
 		try {	// Send ip over TCP connection.
 			aSocket = new DatagramSocket();
