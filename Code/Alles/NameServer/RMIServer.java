@@ -12,7 +12,7 @@ import java.rmi.registry.Registry;
  
 public class RMIServer {
 	
-	private static final int RMI_PORT = 1099;	// Port for RMI service
+	private static final int RMI_PORT = 1025;	// Port for RMI service
 	private static final int MULTICAST_PORT = 8888;	// Port for multicast service
 	private static final String MULTICAST_IP = "224.2.2.3";	// Multicast messages wil be sended to this address 
 	private static final int TCP_PORT = 6789;	// Port use for TCP connections.

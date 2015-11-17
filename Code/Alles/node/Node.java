@@ -25,6 +25,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.Random;
 
 public class Node extends UnicastRemoteObject implements INode {
 	private static final long serialVersionUID = 1L;
@@ -101,14 +102,15 @@ public class Node extends UnicastRemoteObject implements INode {
 			String filename = replicaList.get(i);
 			System.out.println(ipNext + ", kopieren wordt gestart, " + filename);
 			try {
-				ServerSocket servsock = new ServerSocket(9876);
+				int socketPort = getSocketPort ();
+				ServerSocket servsock = new ServerSocket(socketPort);
 				File myFile = new File(pathReplica + filename);
 				INode node = (INode) Naming.lookup("//" + ipNext + "/node");
 
 				Thread getFileThread = new Thread() {
 					public void run() {
 						try {
-							node.getFile(9876, ip(), filename);
+							node.getFile(socketPort, ip(), filename);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -484,6 +486,11 @@ public class Node extends UnicastRemoteObject implements INode {
 			;
 		return sIn.substring(0, endIndex);
 	}
+	
+	private int getSocketPort () {
+		Random randomGenerator = new Random ();
+		return randomGenerator.nextInt (3000) + 1026;
+	}
 
 	/*************************
 	 * not used methods
@@ -536,14 +543,15 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 
 		try {
-			ServerSocket servsock = new ServerSocket(9876);
+			int socketPort = getSocketPort ();
+			ServerSocket servsock = new ServerSocket(socketPort);
 			File myFile = new File(pathLokaal + filename);
 			INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
 
 			Thread getFileThread = new Thread() {
 				public void run() {
 					try {
-						node.getFile(9876, ip(), filename);
+						node.getFile(socketPort, ip(), filename);
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -595,4 +603,6 @@ public class Node extends UnicastRemoteObject implements INode {
 		System.out.println("Contents of replica files: " + replica);
 		doubles(local, replica);
 	}
+	
+	
 }

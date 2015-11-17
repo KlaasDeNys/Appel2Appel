@@ -21,7 +21,7 @@ public class NodeMain {
 		(new ThreadFiles()).start();
 		
 		try {	// Launch RMI
-			Registry registry = LocateRegistry.createRegistry(1099);
+			Registry registry = LocateRegistry.createRegistry(1025);
 			registry.bind ("node", node);
 		} catch (Exception e) {
 			System.out.println ("Node message: RMI: Exception:\n" + e);
