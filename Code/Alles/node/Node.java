@@ -32,10 +32,10 @@ public class Node extends UnicastRemoteObject implements INode {
 	private static String name;
 	private static String lnsIp;
 
-	private static int idNext;
-	private String ipNext;
-	private int idPrev;
-	private String ipPrev;
+	public static int idNext;
+	public static String ipNext;
+	public int idPrev;
+	public String ipPrev;
 
 	private static String pathLokaal = "c://lokaal/";
 	private static String pathReplica = "c://replica/";
@@ -476,7 +476,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		return Math.abs(hashName.hashCode() % 32768);
 	}
 
-	private static String ip() { // Returns the ip of this system.
+	static String ip() { // Returns the ip of this system.
 		InetAddress address;
 		String hostIp = "";
 		try {
@@ -499,7 +499,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		return sIn.substring(0, endIndex);
 	}
 	
-	private int getSocketPort () {
+	private static int getSocketPort () {
 		Random randomGenerator = new Random ();
 		return randomGenerator.nextInt (3000) + 1026;
 	}

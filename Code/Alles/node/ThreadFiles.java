@@ -16,7 +16,9 @@ public class ThreadFiles extends Thread{
 		   else
 			   
 		   try {
+			   if (Node.ipNext != null && Node.ipNext != Node.ip()){
 			Node.doubles(Node.local, Node.replica);
+			   }
 			//System.out.println("Thread control files started...");
 		  
 			run();
