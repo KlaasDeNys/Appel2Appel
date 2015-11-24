@@ -21,12 +21,12 @@ public class NodeMain {
 		(new ThreadFiles()).start();
 		
 		try {	// Launch RMI
-			Registry registry = LocateRegistry.createRegistry(1025);
+			Registry registry = LocateRegistry.createRegistry(1099);
 			registry.bind ("node", node);
 		} catch (Exception e) {
 			System.out.println ("Node message: RMI: Exception:\n" + e);
 		}
-		System.out.println (node.lookupFile("test"));
+		
 		
 		while (true) {	// Standard  work process.
 			System.out.println ("\n[0] shut down\n > ");

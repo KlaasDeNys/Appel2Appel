@@ -68,7 +68,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		final File folder1 = new File(pathReplica);
 		HashMap<String, Integer> replicaNew = listLocalFiles(folder1);
 		ArrayList<String> replicaNewList = new ArrayList<String>(replicaNew.keySet());
-		ArrayList<String> replicaList = new ArrayList<String>(local.keySet());
+		ArrayList<String> replicaList = new ArrayList<String>(replica.keySet());
 		compare(replicaList, replicaNewList);
 		System.out.println("Contents of replica: " + replicaList);
 		move(replicaList);
@@ -97,66 +97,68 @@ public class Node extends UnicastRemoteObject implements INode {
 	}
 
 	private void move(ArrayList<String> replicaList) {
-		for (int i = 0; i < replicaList.size(); i++) {
-			//copy to next node
-			String filename = replicaList.get(i);
-			System.out.println(ipNext + ", verplaatsen wordt gestart, " + filename);
-			try {
-				int socketPort = getSocketPort ();
-				ServerSocket servsock = new ServerSocket(socketPort);
-				File myFile = new File(pathReplica + filename);
-				INode node = (INode) Naming.lookup("//" + ipNext + "/node");
+		if (ipNext != null && ipNext != ip()) {
+			for (int i = 0; i < replicaList.size(); i++) {
+				// copy to next node
+				String filename = replicaList.get(i);
+				System.out.println(ipNext + ", verplaatsen wordt gestart, " + filename);
+				try {
+					int socketPort = getSocketPort();
+					ServerSocket servsock = new ServerSocket(socketPort);
+					File myFile = new File(pathReplica + filename);
+					INode node = (INode) Naming.lookup("//" + ipNext + "/node");
 
-				Thread getFileThread = new Thread() {
-					public void run() {
-						try {
-							node.getFile(socketPort, ip(), filename);
-						} catch (IOException e) {
-							e.printStackTrace();
+					Thread getFileThread = new Thread() {
+						public void run() {
+							try {
+								node.getFile(socketPort, ip(), filename);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
 						}
-					}
-				};
-				getFileThread.start();
+					};
+					getFileThread.start();
 
-				Socket sock = servsock.accept();
-				byte[] mybytearray = new byte[(int) myFile.length()];
-				FileInputStream fis = new FileInputStream(myFile);
-				BufferedInputStream bis = new BufferedInputStream(fis);
-				bis.read(mybytearray, 0, mybytearray.length);
-				OutputStream os = sock.getOutputStream();
-				os.write(mybytearray, 0, mybytearray.length);
-				while (getFileThread.isAlive())
-					;
-				os.flush();
-				servsock.close();
-				bis.close();
-			} catch (MalformedURLException | RemoteException | NotBoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			// delete replica
-			try {
-
-				File file = new File(pathReplica + filename);
-
-				if (file.delete()) {
-					System.out.println(file.getName() + " is deleted!");
-				} else {
-					System.out.println("Delete operation is failed.");
+					Socket sock = servsock.accept();
+					byte[] mybytearray = new byte[(int) myFile.length()];
+					FileInputStream fis = new FileInputStream(myFile);
+					BufferedInputStream bis = new BufferedInputStream(fis);
+					bis.read(mybytearray, 0, mybytearray.length);
+					OutputStream os = sock.getOutputStream();
+					os.write(mybytearray, 0, mybytearray.length);
+					while (getFileThread.isAlive())
+						;
+					os.flush();
+					servsock.close();
+					bis.close();
+				} catch (MalformedURLException | RemoteException | NotBoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 
-			} catch (Exception e) {
-				System.out.println("Delete operation is failed, "+ filename);
-				e.printStackTrace();
+				// delete replica
+				try {
+
+					File file = new File(pathReplica + filename);
+
+					if (file.delete()) {
+						System.out.println(file.getName() + " is deleted!");
+					} else {
+						System.out.println("Delete operation is failed.");
+					}
+
+				} catch (Exception e) {
+					System.out.println("Delete operation is failed, " + filename);
+					e.printStackTrace();
+				}
 			}
 		}
 	}
 
 	public static void doubles(HashMap<String, Integer> local, HashMap<String, Integer> replica)
 			throws InterruptedException, IOException {
-		TimeUnit.SECONDS.sleep(10);
+
 		final File folder = new File(pathLokaal);
 		HashMap<String, Integer> localNew = listLocalFiles(folder);
 		ArrayList<String> localNewList = new ArrayList<String>(localNew.keySet());
@@ -165,14 +167,13 @@ public class Node extends UnicastRemoteObject implements INode {
 		System.out.println("Contents of local files: " + localList);
 		System.out.println("Contents of local new files: " + localNewList);
 
-		// local= hash( localNewList);
 		local.clear();
 		for (int i = 0; i < localNewList.size(); i++) {
 			String var = localNewList.get(i);
-			
+
 			local.put(var, hasher(var));
 		}
-		System.out.println("dit is de nieuwe local: " + local);
+		// System.out.println("dit is de nieuwe local: " + local);
 
 		final File folder1 = new File(pathReplica);
 		HashMap<String, Integer> replicaNew = listLocalFiles(folder1);
@@ -181,14 +182,14 @@ public class Node extends UnicastRemoteObject implements INode {
 		compare(replicaList, replicaNewList);
 		System.out.println("Contents of replica files: " + replicaList);
 		System.out.println("Contents of replica new files: " + replicaNewList);
-		
+
 		replica.clear();
 		for (int i = 0; i < replicaNewList.size(); i++) {
 			String var = replicaNewList.get(i);
-			
+
 			replica.put(var, hasher(var));
 		}
-		System.out.println("dit is de nieuwe replica: ");
+		// System.out.println("dit is de nieuwe replica: ");
 		System.out.println(replica);
 	}
 
@@ -214,6 +215,7 @@ public class Node extends UnicastRemoteObject implements INode {
 
 		DatagramSocket aSocket = null;
 		try { // Open UDP port, server will answer after 5 seconds with his ip.
+
 			aSocket = new DatagramSocket(6789);
 			byte[] buffer = new byte[1000];
 			DatagramPacket request = new DatagramPacket(buffer, buffer.length);
@@ -247,7 +249,8 @@ public class Node extends UnicastRemoteObject implements INode {
 		return false;
 	}
 
-	private boolean setNextNode() {	// when this function is called, this node would contact his upper neighbor.
+	private boolean setNextNode() { // when this function is called, this node
+									// would contact his upper neighbor.
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
 			idNext = lns.getNext(hasher(name));
@@ -308,7 +311,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		try {
 			INode prevNode = (INode) Naming.lookup("//" + ipPrev + "/node");
 			prevNode.changeNextNode(hasher(name), ip());
-			
+
 		} catch (MalformedURLException e) {
 			System.out.println("Node: setPrevNode (): MalformedURLException: (to node)\n" + e);
 			return false;
@@ -319,7 +322,7 @@ public class Node extends UnicastRemoteObject implements INode {
 			System.out.println("Node: setPrevNode (): NotBoundException: (to node)\n" + e);
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -407,7 +410,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		idNext = id;
 		ipNext = ip;
 		System.out.println("Node message: next node is changed: id: " + id + " ip: " + ip);
-		
+
 	}
 
 	public void changePrevNode(int id, String ip) { // Remote function to change
@@ -416,11 +419,13 @@ public class Node extends UnicastRemoteObject implements INode {
 		idPrev = id;
 		ipPrev = ip;
 		System.out.println("Node message: prev node is changed: id: " + id + " ip: " + ip);
-		//Replica over vorige node uitdelen
-		/*for (int i = 0; i < replicaList.size(); i++) {
-			
-		}*/
-		
+		// Replica over vorige node uitdelen
+		/*
+		 * for (int i = 0; i < replicaList.size(); i++) {
+		 * 
+		 * }
+		 */
+
 	}
 
 	public void getFile(int portNr, String ip, String filename) {
@@ -498,10 +503,10 @@ public class Node extends UnicastRemoteObject implements INode {
 			;
 		return sIn.substring(0, endIndex);
 	}
-	
-	private static int getSocketPort () {
-		Random randomGenerator = new Random ();
-		return randomGenerator.nextInt (3000) + 1026;
+
+	private static int getSocketPort() {
+		Random randomGenerator = new Random();
+		return randomGenerator.nextInt(3000) + 1026;
 	}
 
 	/*************************
@@ -555,7 +560,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 
 		try {
-			int socketPort = getSocketPort ();
+			int socketPort = getSocketPort();
 			ServerSocket servsock = new ServerSocket(socketPort);
 			File myFile = new File(pathLokaal + filename);
 			INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
@@ -615,6 +620,5 @@ public class Node extends UnicastRemoteObject implements INode {
 		System.out.println("Contents of replica files: " + replica);
 		doubles(local, replica);
 	}
-	
-	
+
 }
