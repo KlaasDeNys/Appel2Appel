@@ -6,17 +6,24 @@ import java.util.Iterator;
 
 import node.Node;
 
-public class FileListAgent implements Runnable, Serializable {
+public class FileListAgent extends Agent implements Runnable, Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static HashMap<String, Boolean> files_in_system = new HashMap<String,Boolean>(); //List of all files in system
+	private boolean flag = true;
+	
+	public FileListAgent(){
+		super();
+	}
 	
 	public void run() {
-		makeListFiles();
-		checkDownload();
-		checkListAgent();
-		checkListNode();
-	}
+	//	while (flag){
+			makeListFiles();
+			checkDownload();
+			checkListAgent();
+			checkListNode();
+	//	}
+	}	
 	
 	private void makeListFiles(){//Put local files in your global list
 		int occurences = 0;
