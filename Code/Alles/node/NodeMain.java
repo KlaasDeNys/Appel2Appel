@@ -15,18 +15,21 @@ import java.util.Scanner;
  */
 
 public class NodeMain {
+	public static boolean RMIdone= false;
 	public static void main (String [] args) throws InterruptedException, IOException {
-		Node node = new Node ("klaas");	// Create a new Node, with the given name.
-		while (node.bootstrap);	// The RMI service may only launch when the node has started up for 100 %
-		(new ThreadFiles()).start();
-		
+		Node node = new Node ();	// Create a new Node
 		try {	// Launch RMI
 			Registry registry = LocateRegistry.createRegistry(1099);
 			registry.bind ("node", node);
+			
 		} catch (Exception e) {
 			System.out.println ("Node message: RMI: Exception:\n" + e);
 		}
+		while (node.bootstrap);	// The RMI service may only launch when the node has started up for 100 %
+		(new ThreadFiles()).start();
 		
+		
+		RMIdone=true;
 		
 		while (true) {	// Standard  work process.
 			System.out.println ("\n[0] shut down\n > ");
@@ -42,6 +45,7 @@ public class NodeMain {
 				System.out.println (choise + " is not an option.");
 				break;
 			}
-		}		
+		}
+		
 	}
 }

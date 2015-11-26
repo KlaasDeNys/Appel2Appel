@@ -12,7 +12,7 @@ import java.rmi.registry.Registry;
  
 public class RMIServer {
 	
-	private static final int RMI_PORT = 1025;	// Port for RMI service
+	private static final int RMI_PORT = 1099;	// Port for RMI service
 	private static final int MULTICAST_PORT = 8888;	// Port for multicast service
 	private static final String MULTICAST_IP = "224.2.2.3";	// Multicast messages wil be sended to this address 
 	private static final int TCP_PORT = 6789;	// Port use for TCP connections.
@@ -26,7 +26,7 @@ public class RMIServer {
 			NameServer obj = new NameServer ();
 			Registry registry = LocateRegistry.createRegistry (RMI_PORT);
 			registry.bind("LNS", obj);
-			System.out.println("System online");	// -----report
+			System.out.println("System online");	//----------------------------------------
 		} catch (Exception e) {
 			System.out.println("RMIServer main error:\nfailed to start RMI service.");
 		}
@@ -52,7 +52,7 @@ public class RMIServer {
 		}
 	}
 	
-	private static void sendIp (String nodeIp) {	// called in the main, when a node asks for the server's ip
+	private static void sendIp (String nodeIp) {	// Send own ip to the node who use the given ip.
 		DatagramSocket aSocket = null;
 		try {	// Send ip over TCP connection.
 			aSocket = new DatagramSocket();

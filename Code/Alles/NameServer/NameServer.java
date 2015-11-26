@@ -43,6 +43,7 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 	}
 
 	public int getPrev(int id) {	// Returns the lower neighbor of the given node
+		System.out.println (nameRegister);
 		System.out.print("NameServer: " + id + " entered getPrev\tresult: ");	// ----report
 		if (!nameRegister.containsKey(id) || nameRegister.size() <= 1) {
 			System.out.println("no lower neighbor detected.");	// ----report
@@ -70,13 +71,14 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 	}
 
 	public int getNext(int id) {	// Returns the upper neighbor of the given node
-		System.out.println("NameServer: " + id + " entered getNext\tresult: ");	// ----report
+		System.out.println (nameRegister);
+		System.out.print("NameServer: " + id + " entered getNext\tresult: ");	// ----report
 		if (!nameRegister.containsKey(id) || nameRegister.size() <= 1)
 			return 0;	// When their is no upper neighbor
 
 		Set<Integer> keySet = nameRegister.keySet();
 		Iterator<Integer> i = keySet.iterator();
-
+		System.out.println (keySet);
 		int firstId = i.next();
 		int currentId = firstId;
 
