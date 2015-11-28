@@ -9,7 +9,7 @@ import node.Node;
 public class FileListAgent extends Agent implements Runnable, Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private static HashMap<String, Boolean> files_in_system = new HashMap<String,Boolean>(); //List of all files in system
+	public static HashMap<String, Boolean> files_in_system = new HashMap<String,Boolean>(); //List of all files in system
 	private boolean flag = true;
 	
 	public FileListAgent(){
@@ -61,7 +61,7 @@ public class FileListAgent extends Agent implements Runnable, Serializable {
 		}
 	}
 	
-	private void checkDownload(){ //Check if file is downloaded
+	private void checkDownload(){ //Check if file is downloaded. This is when it is in the replicalist
 		Iterator<HashMap.Entry<String, Boolean>> entriesNode = Node.filesSystemNode.entrySet().iterator();
 		while (entriesNode.hasNext()) {
 			HashMap.Entry<String, Boolean> entryNode = entriesNode.next();
