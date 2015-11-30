@@ -2,18 +2,18 @@ package NameServer;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeMap;
 
 public class NameServer extends UnicastRemoteObject implements INameServer {
 
 	private static final long serialVersionUID = 1L;
-	private HashMap <Integer, String> nameRegister; // key: node's id; val: node's ip
+	private TreeMap <Integer, String> nameRegister; // key: node's id; val: node's ip
 
 	NameServer() throws RemoteException { // default constructor.
 		super();
-		nameRegister = new HashMap <Integer, String>();
+		nameRegister = new TreeMap <Integer, String>();
 	}
 
 	public String lookUp(int id) { // return the ip by the given id.
