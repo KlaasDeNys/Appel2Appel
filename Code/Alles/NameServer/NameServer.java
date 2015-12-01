@@ -112,12 +112,11 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 				return firstId;
 			}
 			//klopt niet
-			if (currentId <= hashid) {
-				int result = i.next();
-				System.out.println(result);	// ----report
-				return result;	// The rightful owner is the one with the smallest id higher than the hash.
+			if (currentId > hashid) {
+				System.out.println(currentId);	// ----report
+				return currentId;	// The rightful owner is the one with the smallest id higher than the hash.
 			}
-						currentId = i.next();
+			currentId = i.next();
 		}
 		
 	}
