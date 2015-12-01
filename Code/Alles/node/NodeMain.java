@@ -28,7 +28,8 @@ public class NodeMain {
 		while (node.bootstrap);	// The RMI service may only launch when the node has started up for 100 %
 		(new ThreadFiles()).start();
 		
-		
+		node.setNextNode();
+		node.setPrevNode();
 		RMIdone=true;
 		
 		while (true) {	// Standard  work process.

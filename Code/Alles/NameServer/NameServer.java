@@ -29,7 +29,7 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 			return false;	// When the id is already represented in the system.
 		}
 		nameRegister.put(id, adr);
-
+		System.out.println (nameRegister);
 		return true;	// When success
 	}
 
@@ -37,13 +37,14 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		System.out.println("NameServer: delete " + id);
 		if (nameRegister.containsKey(id)) {
 			nameRegister.remove(id);
+			System.out.println (nameRegister);
 			return true;	// Return true when success.
 		}
 		return false;	// return false, when the given node didn't exist.
 	}
 
 	public int getPrev(int id) {	// Returns the lower neighbor of the given node
-		System.out.println (nameRegister);
+		//System.out.println (nameRegister);
 		System.out.print("NameServer: " + id + " entered getPrev\tresult: ");	// ----report
 		if (!nameRegister.containsKey(id) || nameRegister.size() <= 1) {
 			System.out.println("no lower neighbor detected.");	// ----report
@@ -71,14 +72,14 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 	}
 
 	public int getNext(int id) {	// Returns the upper neighbor of the given node
-		System.out.println (nameRegister);
+		//System.out.println (nameRegister);
 		System.out.print("NameServer: " + id + " entered getNext\tresult: ");	// ----report
 		if (!nameRegister.containsKey(id) || nameRegister.size() <= 1)
 			return 0;	// When their is no upper neighbor
 
 		Set<Integer> keySet = nameRegister.keySet();
 		Iterator<Integer> i = keySet.iterator();
-		System.out.println (keySet);
+		//System.out.println (keySet);
 		int firstId = i.next();
 		int currentId = firstId;
 
@@ -105,20 +106,20 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 
 		int firstId = i.next();
 		int currentId = firstId;
-
-		while (true) {
-			if (!i.hasNext()) {	// If their is no id higher than the hash.
-				System.out.println(firstId);	// ----report
+		
+		while (true){
+			if (!i.hasNext()){
 				return firstId;
 			}
-			if (currentId >= hashid) {
+			//klopt niet
+			if (currentId <= hashid) {
 				int result = i.next();
 				System.out.println(result);	// ----report
 				return result;	// The rightful owner is the one with the smallest id higher than the hash.
 			}
-			currentId = i.next();
+						currentId = i.next();
 		}
-
+		
 	}
 
 }

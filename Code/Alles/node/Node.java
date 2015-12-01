@@ -63,8 +63,8 @@ public class Node extends UnicastRemoteObject implements INode {
 		System.out.println("Eigen ID: " + idOwn);
 		bootstrap = false; // Bootstrap done
 		// while (NodeMain.RMIdone==false);
-		setNextNode(); // Make connection with the next node.
-		setPrevNode(); // Make connection with the previous node.
+		//setNextNode(); // Make connection with the next node.
+		//setPrevNode(); // Make connection with the previous node.
 
 	}
 
@@ -118,7 +118,6 @@ public class Node extends UnicastRemoteObject implements INode {
 				ServerSocket servsock = new ServerSocket(socketPort);
 				File myFile = new File(pathReplica + filename);
 				INode node = (INode) Naming.lookup("//" + ip + "/node");
-
 				Thread getFileThread = new Thread() {
 					public void run() {
 						try {
@@ -260,7 +259,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		return false;
 	}
 
-	private boolean setNextNode() { // when this function is called, this node
+	public boolean setNextNode() { // when this function is called, this node
 									// would contact his upper neighbor.
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
@@ -297,7 +296,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		return false;
 	}
 
-	private boolean setPrevNode() {
+	public boolean setPrevNode() {
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
 			idPrev = lns.getPrev(hasher(name));
@@ -421,9 +420,9 @@ public class Node extends UnicastRemoteObject implements INode {
 		ipNext = ip;
 		System.out.println("Node message: next node is changed: id: " + id + " ip: " + ip);
 		// Replica over volgende node uitdelen
-
-		VerplaatsenNextPrevNode(idNext);
-
+		//if (idPrev > idOwn) {
+			VerplaatsenNextPrevNode(idNext);
+		//}
 	}
 
 	public void changePrevNode(int id, String ip) { // Remote function to change
@@ -433,9 +432,9 @@ public class Node extends UnicastRemoteObject implements INode {
 		ipPrev = ip;
 		System.out.println("Node message: prev node is changed: id: " + id + " ip: " + ip);
 		// Replica over vorige node uitdelen
-		if (idPrev > idOwn) {
-			VerplaatsenNextPrevNode(idPrev);
-		}
+
+		VerplaatsenNextPrevNode(idPrev);
+
 	}
 
 	public void VerplaatsenNextPrevNode(int idNextPrev) {
@@ -500,9 +499,9 @@ public class Node extends UnicastRemoteObject implements INode {
 			File file = new File(pathReplica + filename);
 
 			if (file.delete()) {
-				System.out.println(file.getName() + " is deleted!");
+				//System.out.println(file.getName() + " is deleted!");
 			} else {
-				System.out.println("Delete operation is failed.");
+				System.out.println("Delete operation is failed:"+file.getName());
 			}
 
 		} catch (Exception e) {
