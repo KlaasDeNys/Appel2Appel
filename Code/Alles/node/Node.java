@@ -63,21 +63,28 @@ public class Node extends UnicastRemoteObject implements INode {
 		System.out.println("Eigen ID: " + idOwn);
 		bootstrap = false; // Bootstrap done
 		// while (NodeMain.RMIdone==false);
-		//setNextNode(); // Make connection with the next node.
-		//setPrevNode(); // Make connection with the previous node.
+		// setNextNode(); // Make connection with the next node.
+		// setPrevNode(); // Make connection with the previous node.
 
 	}
 
 	public void shutdown() throws IOException { // Call to shut down this node.
-
+		/*
+		 * Verander de naaste nodes check replica, deel uit aan bovenste. Check
+		 * lokaal, vraag op aan agent of bestand ergens ander ook bestaat in
+		 * lokaal --> wis alle replicas op andere nodes.
+		 * Verwijdern van nameserver. Check
+		 * 
+		 */
 		if (ipNext != null && ipNext != ip()) {
 			final File folder1 = new File(pathReplica);
 			HashMap<String, Integer> replicaNew = listLocalFiles(folder1);
 			ArrayList<String> replicaNewList = new ArrayList<String>(replicaNew.keySet());
 			ArrayList<String> replicaList = new ArrayList<String>(replica.keySet());
-			compare(replicaList, replicaNewList);// zeker?
+			compare(replicaList, replicaNewList);
 			System.out.println("Contents of replica: " + replicaList);
 			move(replicaList, idPrev);
+
 		}
 		try {
 			INode nextNode = (INode) Naming.lookup("//" + ipNext + "/node");
@@ -92,7 +99,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			System.out.println("failed to connect to prevNode");
 		}
-
+//verwijder van nameserver
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
 			lns.delete(hasher(name));
@@ -420,9 +427,9 @@ public class Node extends UnicastRemoteObject implements INode {
 		ipNext = ip;
 		System.out.println("Node message: next node is changed: id: " + id + " ip: " + ip);
 		// Replica over volgende node uitdelen
-		//if (idPrev > idOwn) {
-			VerplaatsenNextPrevNode(idNext);
-		//}
+		// if (idPrev > idOwn) {
+		VerplaatsenNextPrevNode(idNext);
+		// }
 	}
 
 	public void changePrevNode(int id, String ip) { // Remote function to change
@@ -499,9 +506,9 @@ public class Node extends UnicastRemoteObject implements INode {
 			File file = new File(pathReplica + filename);
 
 			if (file.delete()) {
-				//System.out.println(file.getName() + " is deleted!");
+				// System.out.println(file.getName() + " is deleted!");
 			} else {
-				System.out.println("Delete operation is failed:"+file.getName());
+				System.out.println("Delete operation is failed:" + file.getName());
 			}
 
 		} catch (Exception e) {
