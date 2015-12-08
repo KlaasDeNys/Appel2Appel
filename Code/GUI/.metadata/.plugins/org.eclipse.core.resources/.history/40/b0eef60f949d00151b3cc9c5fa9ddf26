@@ -1,0 +1,29 @@
+package node;
+
+import java.util.HashMap;
+
+import javax.swing.BoxLayout;
+import javax.swing.JFrame;
+
+public class NodeGui extends JFrame {
+	private static final long serialVersionUID = 1L;
+	private HashMap <String, YPanel> panelMap;
+
+	public NodeGui () {
+		super("System Y");
+		setBounds (100,100,450,300);
+		setLayout (new BoxLayout (this, BoxLayout.PAGE_AXIS));
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		panelMap = new HashMap <String,YPanel> ();
+	}
+	
+	
+	public boolean addFile (String fileName, boolean local) {
+		YPanel panel = new YPanel (fileName, local);
+		if(panelMap.put(fileName, panel) == null) {
+			return false;
+		}
+		add(panel);
+		return true;
+	}
+}

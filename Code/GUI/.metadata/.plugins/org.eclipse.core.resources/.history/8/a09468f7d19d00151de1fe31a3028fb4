@@ -1,0 +1,39 @@
+package node;
+
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+public class YPanel extends JPanel implements ActionListener {
+	private static final long serialVersionUID = 1L;
+	private JLabel nameField;
+	private JButton butOpen;
+	private JButton butDelete;
+	private JButton butDeleteLocal;
+	private boolean local;
+	
+	public YPanel (String FileName, boolean local) {
+		super (new FlowLayout(FlowLayout.LEFT));
+		nameField = new JLabel (FileName);
+		add (nameField);
+		butOpen = new JButton ("open");
+		add (butOpen);
+		butDelete = new JButton ("delete");
+		add (butDelete);
+		this.local = local;
+		if (local) {
+			butDeleteLocal = new JButton ("delete local");
+			add (butDeleteLocal);
+		}
+		System.out.println("YPanel of " + FileName + " is created.");
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		
+	}
+}
