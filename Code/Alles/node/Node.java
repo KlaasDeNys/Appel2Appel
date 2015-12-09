@@ -634,7 +634,29 @@ public class Node extends UnicastRemoteObject implements INode {
 			}
 		}
 	}
+	/*private void deleteLocal() {
+		final File folder1 = new File(pathLokaal);
+		HashMap<String, Integer> LokaalNew = listLocalFiles(folder1);
+		ArrayList<String> LokaalNewList = new ArrayList<String>(LokaalNew.keySet());
 
+		replica.clear();
+		for (int i = 0; i < LokaalNewList.size(); i++) {
+			try {
+
+				File file = new File(pathLokaal + LokaalNewList.get(i));
+
+				if (file.delete()) {
+					// System.out.println(file.getName() + " is deleted!");
+				} else {
+					System.out.println("Delete operation is failed, " + LokaalNewList);
+				}
+
+			} catch (Exception e) {
+				System.out.println("Delete operation is failed, " + LokaalNewList);
+				e.printStackTrace();
+			}
+		}
+	}*/
 	public int lookupFile(String filename) {
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
