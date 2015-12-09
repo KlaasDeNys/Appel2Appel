@@ -1,29 +1,69 @@
 package agent;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import NameServer.INameServer;
+
+import node.INode;
 import node.Node;
 
 public class FileListAgent extends Agent implements Runnable, Serializable {
 
 	private static final long serialVersionUID = 1L;
 	public static HashMap<String, Boolean> files_in_system = new HashMap<String,Boolean>(); //List of all files in system
-	private boolean flag = true;
+	public static HashMap<String, Boolean> localList = new HashMap<String,Boolean>(); 
+	public static HashMap<String, Boolean> replicaList = new HashMap<String,Boolean>(); 
 	
 	public FileListAgent(){
 		super();
 	}
 	
 	public void run() {
-	//	while (flag){
 			makeListFiles();
 			checkDownload();
 			checkListAgent();
 			checkListNode();
-	//	}
-	}	
+			Iterator<HashMap.Entry<String, Boolean>> entriesAgent = files_in_system.entrySet().iterator();
+			System.out.println(files_in_system.size());
+			while(entriesAgent.hasNext()){ //Check if the file is already in the agent his list
+				HashMap.Entry<String, Boolean> entryAgent = entriesAgent.next();
+				System.out.println(entryAgent.getKey());
+			}	
+	}
+	
+	public boolean existLocal(int idOwn, String filename)
+	{
+		INameServer lns;
+		int presentId;
+		presentId = idOwn;
+		int counter = 0;
+		while ((presentId != idOwn)&&(counter  != 0)){
+			try { //Setup of the current node
+				lns = (INameServer) Naming.lookup("//" + Node.lnsIp + "/LNS");
+				int idNextNode = lns.getNext(presentId);
+				String ipNextNode = lns.lookUp(idNextNode);
+				INode currentNode = (INode) Naming.lookup("//" + ipNextNode + "/node");
+				counter++;
+				presentId = idNextNode;
+			} catch (MalformedURLException| RemoteException| NotBoundException e1) {
+				e1.printStackTrace();
+			}
+			Iterator<HashMap.Entry<String, Integer>> entriesNode = Node.local.entrySet().iterator();
+			while (entriesNode.hasNext()) { 
+				HashMap.Entry<String, Integer> entryNode = entriesNode.next();
+				if(entryNode.getKey() == filename){
+					return true;
+				}
+			}
+		}	
+		return false;
+	}
 	
 	private void makeListFiles(){//Put local files in your global list
 		int occurences = 0;
@@ -41,6 +81,7 @@ public class FileListAgent extends Agent implements Runnable, Serializable {
 			}
 			if(occurences == 0){ // The file isn't in the list of the agent
 				Node.filesSystemNode.put(entryNode.getKey(), false); //Lock moet nog automatisch bepaald worden
+				localList.put(entryNode.getKey(), false);
 			}
 		}
 		//Copy the replica files to the list
@@ -57,6 +98,7 @@ public class FileListAgent extends Agent implements Runnable, Serializable {
 			}
 			if(occurences == 0){ // The file isn't in the list of the agent
 				Node.filesSystemNode.put(entryReplica.getKey(), false); //Lock moet nog automatisch bepaald worden
+				replicaList.put(entryReplica.getKey(), false);
 			}
 		}
 	}
@@ -116,7 +158,7 @@ public class FileListAgent extends Agent implements Runnable, Serializable {
 		}
 	}
 	
-	public static void main(String args[]) {
+/*	public static void main(String args[]) {
 		Node.local.put("test1", 1);
 		Node.local.put("test2", 2);
 		Node.replica.put("test3", 3);
@@ -156,5 +198,5 @@ public class FileListAgent extends Agent implements Runnable, Serializable {
 		    boolean value = entry.getValue();
 		    System.out.println(key + " " + value);
 		}
-	}
+	}*/
 }

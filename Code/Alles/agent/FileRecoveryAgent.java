@@ -13,6 +13,7 @@ import NameServer.INameServer;
 
 import node.INode;
 import node.Node;
+import node.RMIObject;
 
 public class FileRecoveryAgent extends Agent implements Runnable, Serializable {
 
@@ -35,13 +36,16 @@ public class FileRecoveryAgent extends Agent implements Runnable, Serializable {
 	}
 	
 	public void run() {
+		int prevFailNode = 0;
+		String ipPrevNode = "";
+		INode nextNode;
+		String ipNext = "";
 		while(flag){ //run until you are back at the start node
 			INameServer lns;
 			String ipNode;
 			int setup = 0; 
 			INode currentNode;
 			int counter = 0;
-			int prevFailNode = 0;
 			
 			if(currentid != idFail){ //Do the following only when the current node is not the failed node
 				try { //Setup of the current node
@@ -49,6 +53,8 @@ public class FileRecoveryAgent extends Agent implements Runnable, Serializable {
 					ipNode = lns.lookUp(currentid);
 					currentNode = (INode) Naming.lookup("//" + ipNode + "/node");
 					prevFailNode = lns.getPrev(idFail);
+					nextFailid = lns.getNext(idFail);
+					ipNext = lns.lookUp(nextFailid);
 					nextId = lns.getNext(currentid);
 				} catch (MalformedURLException| RemoteException| NotBoundException e1) {
 					e1.printStackTrace();
@@ -58,12 +64,12 @@ public class FileRecoveryAgent extends Agent implements Runnable, Serializable {
 				
 				while (entriesNode.hasNext()) { //loop over the local list of the node
 					HashMap.Entry<String, Integer> entryNode = entriesNode.next();
-					if ((entryNode.getValue() < idFail)&&(entryNode.getValue() >= currentid) && (entryNode.getValue() >= prevFailNode)){ //check when hash is equal to the failed node
+					if ((entryNode.getValue() > idFail) && (entryNode.getValue() > prevFailNode)){ //check when hash is equal to the failed node &&(entryNode.getValue() > currentid)
 						try {
 							lns = (INameServer) Naming.lookup("//" + Node.lnsIp + "/LNS");
-							nextFailid = lns.getNext(idFail); //ask next node of the failed node
-							String ipNextNode = lns.lookUp(nextFailid); //ask his ip address
-							INode nextNode = (INode) Naming.lookup("//" + ipNextNode + "/node"); //go the next node of the failed node
+							//nextFailid = lns.getNext(idFail); //ask next node of the failed node
+							ipPrevNode = lns.lookUp(prevFailNode); //ask his ip address
+							nextNode = (INode) Naming.lookup("//" + ipPrevNode + "/node"); //go the next node of the failed node
 							Iterator<HashMap.Entry<String, Integer>> entriesNextNode = Node.local.entrySet().iterator();
 							counter = 0;
 							while (entriesNextNode.hasNext()) { //loop over the next node of the failed node
@@ -73,14 +79,7 @@ public class FileRecoveryAgent extends Agent implements Runnable, Serializable {
 								}
 							}
 							if(counter == 0){
-								try {//NAKIJKEN OF HET NAAR DE VOLGENDE NODE WORDT GEKOPIEERD!!!!
-									lns = (INameServer) Naming.lookup("//" + Node.lnsIp + "/LNS");
-									String ipFail = lns.lookUp(idFail);
-									INode nextidNode = (INode) Naming.lookup("//" + ipFail + "/node");
-									Node.copyToNode(entryNode.getKey());
-								} catch (IOException e) {
-									System.out.println("Failed to copy file: " + e);
-								}
+								Node.local.put(entryNode.getKey(), entryNode.getValue());
 								FileListAgent.files_in_system.put(entryNode.getKey(), true); //File must be copied so the value on true
 							}
 							else{ 
@@ -88,7 +87,8 @@ public class FileRecoveryAgent extends Agent implements Runnable, Serializable {
 							}
 							currentid = nextId;
 							if((currentid == idStart)&&(setup != 0)){ //function must end when it's back at the first node
-								flag = false;		
+								flag = false;
+								RMIObject.flag = false;
 							}	
 						} catch (MalformedURLException | RemoteException | NotBoundException e) {	
 							System.out.println("Agent failed to adapt files " + e);
@@ -99,6 +99,24 @@ public class FileRecoveryAgent extends Agent implements Runnable, Serializable {
 			}
 			else
 				currentid = nextFailid;
+		}
+		try {
+			INode nextNodeNow = (INode) Naming.lookup("//" + ipNext + "/node");
+			nextNodeNow.changePrevNode(prevFailNode, ipPrevNode);
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			System.out.println("failed to connect to nextNode");
+		}
+		try {
+			INode prevNode = (INode) Naming.lookup("//" + ipPrevNode + "/node");
+			prevNode.changeNextNode(nextFailid, ipNext);
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			System.out.println("failed to connect to prevNode");
+		}
+		try {
+			INameServer lns = (INameServer) Naming.lookup("//" + Node.lnsIp + "/LNS");
+			lns.delete(idFail);
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			System.out.println("failed to connect the server");
 		}
 	}
 }
