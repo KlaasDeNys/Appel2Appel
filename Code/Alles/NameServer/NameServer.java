@@ -109,6 +109,7 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		
 		while (true){
 			if (!i.hasNext()){
+				System.out.println(firstId);
 				return firstId;
 			}
 			if (currentId > hashid) {

@@ -72,10 +72,12 @@ public class Node extends UnicastRemoteObject implements INode {
 		/*
 		 * Verander de naaste nodes check replica, deel uit aan bovenste. Check
 		 * lokaal, vraag op aan agent of bestand ergens ander ook bestaat in
-		 * lokaal --> wis alle replicas op andere nodes.
-		 * Verwijdern van nameserver. Check
+		 * lokaal --> wis alle replicas op andere nodes. Verwijdern van
+		 * nameserver. Check
 		 * 
 		 */
+
+		// Verander de naaste nodes check replica, deel uit aan bovenste.
 		if (ipNext != null && ipNext != ip()) {
 			final File folder1 = new File(pathReplica);
 			HashMap<String, Integer> replicaNew = listLocalFiles(folder1);
@@ -99,7 +101,51 @@ public class Node extends UnicastRemoteObject implements INode {
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			System.out.println("failed to connect to prevNode");
 		}
-//verwijder van nameserver
+		// Lokaal nakijken,
+		// vraag aan agent op of het nog ergens anders in lokaal bestaat.
+		// Wis replica's indien niet lokaal op andere nodes
+		final File folder1 = new File(pathLokaal);
+		HashMap<String, Integer> lokaal = listLocalFiles(folder1);
+		ArrayList<String> lokaalList = new ArrayList<String>(lokaal.keySet());
+		System.out.println("Contents of lokaal: " + lokaalList);
+
+		for (int i = 0; i < lokaalList.size(); i++) {
+			String filename = lokaalList.get(i);
+			if (false == false) {// Bestaatlokaalergensanders(idOwn, filename)
+				
+				System.out.println("Bestaat nergens anders " + filename);
+				String ipfilenode;
+				try {
+					INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
+					int idnode = lns.getNode(filename);
+					/*if (idnode == hasher(name)) {
+						idnode = idPrev;
+					}*/
+					ipfilenode = lns.lookUp(idnode);
+					System.out.println("ID delete: " + idnode);
+					try {
+						INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
+						try {
+							node.deletefile(filename);
+						} catch (IOException e) {
+
+							e.printStackTrace();
+						}
+
+					} catch (MalformedURLException | RemoteException | NotBoundException e) {
+						e.printStackTrace();
+					}
+				} catch (MalformedURLException e) {
+					System.out.println("Node.getNode (): MalformedURLException\n\n" + e);
+				} catch (RemoteException e) {
+					System.out.println("Node.getNode (): RemoteException\n\n" + e);
+				} catch (NotBoundException e) {
+					System.out.println("Node.getNode (): NotBoundException\n\n" + e);
+				}
+
+			}
+		}
+		// verwijder van nameserver
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
 			lns.delete(hasher(name));
@@ -612,9 +658,9 @@ public class Node extends UnicastRemoteObject implements INode {
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
 			int idnode = lns.getNode(filename);
-			if (idnode == hasher(name)) {
+			/*if (idnode == hasher(name)) {
 				idnode = idNext;
-			}
+			}*/
 			ipfilenode = lns.lookUp(idnode);
 			System.out.println("ID copy: " + idnode);
 		} catch (MalformedURLException e) {
