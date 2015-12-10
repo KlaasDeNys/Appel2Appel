@@ -65,6 +65,34 @@ public class FileListAgent extends Agent implements Runnable, Serializable {
 		return false;
 	}
 	
+	public int existLocal(String filename)
+	{
+		INameServer lns;
+		int presentId;
+		presentId = idOwn;
+		int counter = 0;
+		while ((presentId != idOwn)&&(counter  != 0)){
+			try { //Setup of the current node
+				lns = (INameServer) Naming.lookup("//" + Node.lnsIp + "/LNS");
+				int idNextNode = lns.getNext(presentId);
+				String ipNextNode = lns.lookUp(idNextNode);
+				INode currentNode = (INode) Naming.lookup("//" + ipNextNode + "/node");
+				counter++;
+				presentId = idNextNode;
+			} catch (MalformedURLException| RemoteException| NotBoundException e1) {
+				e1.printStackTrace();
+			}
+			Iterator<HashMap.Entry<String, Integer>> entriesNode = Node.local.entrySet().iterator();
+			while (entriesNode.hasNext()) { 
+				HashMap.Entry<String, Integer> entryNode = entriesNode.next();
+				if(entryNode.getKey() == filename){
+					return entryNode.getValue();
+				}
+			}
+		}	
+		return 0;
+	}
+	
 	private void makeListFiles(){//Put local files in your global list
 		int occurences = 0;
 		//First copy the local files to the list
