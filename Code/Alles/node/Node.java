@@ -27,10 +27,14 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.Random;
 
+import agent.Agent;
+import agent.FileListAgent;
+import agent.FileRecoveryAgent;
+
 public class Node extends UnicastRemoteObject implements INode {
 	private static final long serialVersionUID = 1L;
 	private static String name;
-	private static String lnsIp;
+	public static String lnsIp;
 
 	public static int idNext;
 	public static String ipNext;
@@ -42,7 +46,9 @@ public class Node extends UnicastRemoteObject implements INode {
 	private static String pathReplica = "c://replica/";
 	public static HashMap<String, Integer> local = new HashMap<String, Integer>();
 	public static HashMap<String, Integer> replica = new HashMap<String, Integer>();
-
+	public static HashMap<String, Boolean> filesSystemNode = new HashMap<String,Boolean>();
+	private static Agent ag = new Agent(){;
+	public void run(){}};
 	public boolean bootstrap;
 
 	/*************************
@@ -174,13 +180,13 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 		for (int i = 0; i < replicaList.size(); i++) {
 			// copy to prevnext node
-			String filename = replicaList.get(i);
+			final String filename = replicaList.get(i);
 			System.out.println(idNextPrev + ", verplaatsen wordt gestart, " + filename);
 			try {
-				int socketPort = getSocketPort();
+				final int socketPort = getSocketPort();
 				ServerSocket servsock = new ServerSocket(socketPort);
 				File myFile = new File(pathReplica + filename);
-				INode node = (INode) Naming.lookup("//" + ip + "/node");
+				final INode node = (INode) Naming.lookup("//" + ip + "/node");
 				Thread getFileThread = new Thread() {
 					public void run() {
 						try {
@@ -472,6 +478,17 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 	}
 
+	public void failure(Agent ag) throws RemoteException
+	{
+		ag = new FileRecoveryAgent(idOwn,idNext);
+		ag.run();
+		System.out.println("Starting failure procedure...");
+		
+	//	agent.FileRecoveryAgent fileAgent = new FileRecoveryAgent(idOwn, idNext);
+	//	RMIObject r = new RMIObject(ag);
+		//fileAgent.run();
+	}
+	
 	/*************************
 	 * RMI methods
 	 *************************/
@@ -685,7 +702,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		return replica;
 	}
 
-	public static void copyToNode(String filename) throws IOException {
+	public static void copyToNode(final String filename) throws IOException {
 		String ipfilenode = "";
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
@@ -704,10 +721,10 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 
 		try {
-			int socketPort = getSocketPort();
+			final int socketPort = getSocketPort();
 			ServerSocket servsock = new ServerSocket(socketPort);
 			File myFile = new File(pathLokaal + filename);
-			INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
+			final INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
 
 			Thread getFileThread = new Thread() {
 				public void run() {
