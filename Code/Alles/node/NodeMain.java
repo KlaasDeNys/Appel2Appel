@@ -6,6 +6,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
 
+import agent.FileListAgent;
+
 /*
  *
  *	NodeMain have the usasge to launch te RMI service of a node.
@@ -18,6 +20,7 @@ public class NodeMain {
 	public static boolean RMIdone= false;
 	public static void main (String [] args) throws InterruptedException, IOException {
 		Node node = new Node ();	// Create a new Node
+		agent.FileListAgent fileAgent = new FileListAgent(); //Create a new FileListAgent
 		try {	// Launch RMI
 			Registry registry = LocateRegistry.createRegistry(1099);
 			registry.bind ("node", node);
@@ -35,17 +38,22 @@ public class NodeMain {
 		while (true) {	// Standard  work process.
 			System.out.println ("\n[0] shut down\n > ");
 			Scanner scanner = new Scanner (System.in);
-			int choise = scanner.nextInt();
-			switch (choise) {
-			case 0:		// Remove this node from the system.
+			while(scanner.nextInt() != 0){
+				fileAgent.run();
+				Thread.sleep(5000);
+//			int choise = scanner.nextInt();
+//			switch (choise) {
+//			case 0:		// Remove this node from the system.
+			
+			}	
 				node.shutdown ();
 				scanner.close();
 				System.exit(0);
 				break;
-			default:	// Wrong input.
-				System.out.println (choise + " is not an option.");
-				break;
-			}
+			//default:	// Wrong input.
+			//	System.out.println (choise + " is not an option.");
+			//	break;
+			//}
 		}
 		
 	}
