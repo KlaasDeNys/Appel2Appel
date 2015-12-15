@@ -44,6 +44,14 @@ public class NodeGui extends JFrame {
 		return true;
 	}
 	
+	public boolean changeLocality (String fileName, boolean local) {
+		if(!panelMap.containsKey(fileName))
+			return false;
+		panelMap.get(fileName).changeLocality(local);
+		mainPanel.updateUI();
+		return true;
+	}
+	
 	public void compareFiles (Set <String> realFileSet) {
 		Set <String> currentFileSet = panelMap.keySet();
 		

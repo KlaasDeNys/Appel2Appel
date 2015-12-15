@@ -18,6 +18,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -847,6 +848,15 @@ public class Node extends UnicastRemoteObject implements INode {
 	}
 	
 	public static void deleteLocal (String fileName) {
-		System.out.println("Node void delteLocal()");
+		File file = new File(pathLokaal + fileName);
+		if (file.exists()) {
+			gui.changeLocality(fileName, false);
+		} else {
+			if (file.delete()) {
+				gui.changeLocality(fileName, false);
+			} else {
+				
+			}
+		}
 	}
 }

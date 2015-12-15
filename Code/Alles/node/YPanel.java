@@ -16,6 +16,7 @@ public class YPanel extends JPanel implements ActionListener {
 	private JButton butOpen;
 	private JButton butDelete;
 	private JButton butDeleteLocal;
+	private boolean local;
 	
 	public YPanel (String fileName, boolean local) {
 		super (new FlowLayout(FlowLayout.LEFT));
@@ -31,10 +32,26 @@ public class YPanel extends JPanel implements ActionListener {
 		add (butDelete);
 		butDelete.addActionListener(this);
 		
+		this.local = local;
 		if (local) {
 			butDeleteLocal = new JButton ("delete local");
 			add (butDeleteLocal);
 			butDeleteLocal.addActionListener(this);
+		}
+	}
+	
+	public void changeLocality (boolean local) {	// Change locality of the panel.
+		if (this.local != local) {
+			this.local = local;
+			if (local) {
+				if (butDeleteLocal == null) {
+					butDeleteLocal = new JButton ("delete local");
+					butDeleteLocal.addActionListener(this);
+				}
+				add (butDeleteLocal);
+			} else {
+				remove(butDeleteLocal);
+			}
 		}
 	}
 
