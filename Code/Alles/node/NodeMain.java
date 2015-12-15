@@ -18,6 +18,7 @@ import agent.FileListAgent;
 
 public class NodeMain {
 	public static boolean RMIdone= false;
+	
 	public static void main (String [] args) throws InterruptedException, IOException {
 		Node node = new Node ();	// Create a new Node
 		agent.FileListAgent fileAgent = new FileListAgent(); //Create a new FileListAgent

@@ -50,6 +50,8 @@ public class Node extends UnicastRemoteObject implements INode {
 	private static Agent ag = new Agent(){;
 	public void run(){}};
 	public boolean bootstrap;
+	
+	public NodeGui gui;
 
 	/*************************
 	 * public Process Methods
@@ -71,7 +73,9 @@ public class Node extends UnicastRemoteObject implements INode {
 		// while (NodeMain.RMIdone==false);
 		// setNextNode(); // Make connection with the next node.
 		// setPrevNode(); // Make connection with the previous node.
-
+		
+		gui = new NodeGui();
+		gui.setVisible(true);
 	}
 
 	public void shutdown() throws IOException { // Call to shut down this node.
@@ -695,7 +699,8 @@ public class Node extends UnicastRemoteObject implements INode {
 			}
 		}
 	}
-	/*private void deleteLocal() {
+	
+	/*private static void deleteLocal () {
 		final File folder1 = new File(pathLokaal);
 		HashMap<String, Integer> LokaalNew = listLocalFiles(folder1);
 		ArrayList<String> LokaalNewList = new ArrayList<String>(LokaalNew.keySet());
@@ -718,6 +723,7 @@ public class Node extends UnicastRemoteObject implements INode {
 			}
 		}
 	}*/
+	
 	public int lookupFile(String filename) throws IOException {
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
@@ -827,4 +833,19 @@ public class Node extends UnicastRemoteObject implements INode {
 		doubles(local, replica);
 	}
 */
+	
+	/***************
+	 * GUI methodes
+	 * ************/
+	public static void open (String fileName) {
+		System.out.println("Node void open()");
+	}
+	
+	public static void delete (String fileName) {
+		System.out.println("Node void delete()");
+	}
+	
+	public static void deleteLocal (String fileName) {
+		System.out.println("Node void delteLocal()");
+	}
 }
