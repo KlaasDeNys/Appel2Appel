@@ -843,19 +843,24 @@ public class Node extends UnicastRemoteObject implements INode {
 		System.out.println("Node void open()");
 	}
 	
+	public static void openLocal (String fileName) {
+		
+	}
+	
 	public static void delete (String fileName) {
 		System.out.println("Node void delete()");
 	}
 	
-	public static void deleteLocal (String fileName) {
+	public static void deleteLocal (String fileName) {	// This method wil be called from the gui to delete a local file.
 		File file = new File(pathLokaal + fileName);
 		if (file.exists()) {
 			gui.changeLocality(fileName, false);
+			System.out.println(fileName + " is not a local file.");	//-------Report
 		} else {
 			if (file.delete()) {
 				gui.changeLocality(fileName, false);
 			} else {
-				
+				System.out.println("Failed to delete " + fileName + " local.");	//-------Report
 			}
 		}
 	}

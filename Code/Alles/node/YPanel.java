@@ -66,7 +66,10 @@ public class YPanel extends JPanel implements ActionListener {
 	}
 	
 	private void open () {	
-		Node.open(fileName);
+		if (local)
+			Node.openLocal(fileName);
+		else
+			Node.open(fileName);
 	}
 	
 	private void delete () {
