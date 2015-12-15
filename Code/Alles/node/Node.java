@@ -51,7 +51,7 @@ public class Node extends UnicastRemoteObject implements INode {
 	public void run(){}};
 	public boolean bootstrap;
 	
-	public NodeGui gui;
+	public static NodeGui gui;
 
 	/*************************
 	 * public Process Methods
@@ -262,7 +262,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		local.clear();
 		for (int i = 0; i < localNewList.size(); i++) {
 			String var = localNewList.get(i);
-
+			gui.addFile (var, true);	/*** GUI functie */
 			local.put(var, hasher(var));
 		}
 		// System.out.println("dit is de nieuwe local: " + local);
@@ -498,6 +498,7 @@ public class Node extends UnicastRemoteObject implements INode {
 					INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
 					try {
 						node.deletefile(verwijder);
+						gui.deleteFile(verwijder);
 					} catch (IOException e) {
 
 						e.printStackTrace();
@@ -592,7 +593,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 	}
 
-	public void getFile(int portNr, String ip, String filename) throws IOException{
+	public void getFile(int portNr, String ip, String filename) throws IOException{	// Called when an other node has to send a replica of a file to this node.
 		try {
 			Socket sock = new Socket(ip, portNr);
 			byte[] mybytearray = new byte[6022386];

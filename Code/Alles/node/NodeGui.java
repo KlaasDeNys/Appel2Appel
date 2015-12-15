@@ -1,6 +1,9 @@
 package node;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -39,5 +42,21 @@ public class NodeGui extends JFrame {
 		panelMap.remove(fileName);
 		mainPanel.updateUI();
 		return true;
+	}
+	
+	public void compareFiles (Set <String> realFileSet) {
+		Set <String> currentFileSet = panelMap.keySet();
+		
+		for(Iterator<String> i = currentFileSet.iterator(); i.hasNext(); ) {	// Check which file's has desepeared.
+			String fileName = i.next();
+			if (!realFileSet.contains(fileName))
+				deleteFile(fileName);
+		}
+		
+		for(Iterator<String> i = realFileSet.iterator(); i.hasNext(); ) {
+			String fileName = i.next();
+			if (!currentFileSet.contains(fileName))
+				addFile (fileName, false);
+		}
 	}
 }
