@@ -2,6 +2,8 @@ package node;
 
 import java.io.IOException;
 
+import agent.FileListAgent;
+
 public class ThreadFiles extends Thread{
 	   public void run() {
 		   boolean flag = true;
@@ -18,6 +20,7 @@ public class ThreadFiles extends Thread{
 		   try {
 			   //if (Node.ipNext != null && Node.ipNext != Node.ip()){
 			Node.doubles(Node.local, Node.replica);
+			new FileListAgent().run();
 			   //}
 			//System.out.println("Thread control files started...");
 		  
@@ -33,6 +36,7 @@ public class ThreadFiles extends Thread{
 	   }
 	   
 	   public static void main(String args[]) {
+		   agent.FileListAgent fileAgent = new FileListAgent();
 		   (new ThreadFiles()).start();
 	   }
 }

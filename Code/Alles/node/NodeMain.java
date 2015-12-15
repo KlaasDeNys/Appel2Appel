@@ -23,7 +23,7 @@ public class NodeMain {
 		Node node = new Node ();	// Create a new Node
 		agent.FileListAgent fileAgent = new FileListAgent(); //Create a new FileListAgent
 		try {	// Launch RMI
-			Registry registry = LocateRegistry.createRegistry(1099);
+			Registry registry = LocateRegistry.createRegistry(1098);
 			registry.bind ("node", node);
 			
 		} catch (Exception e) {
@@ -40,8 +40,8 @@ public class NodeMain {
 			System.out.println ("\n[0] shut down\n > ");
 			Scanner scanner = new Scanner (System.in);
 			while(scanner.nextInt() != 0){
-				fileAgent.run();
-				Thread.sleep(5000);
+				//fileAgent.run();
+				//Thread.sleep(5000);
 //			int choise = scanner.nextInt();
 //			switch (choise) {
 //			case 0:		// Remove this node from the system.
