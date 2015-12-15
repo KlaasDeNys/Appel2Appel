@@ -1,0 +1,17 @@
+To do:
+
+Agent:
+	Shutdown	Manu & Kevin
+	Debug		Manu & Kevin
+	CirkelregeneringManu & Kevin
+	Update GUI	Manu & Kevin	(GUI info bij Jens)
+
+Node:
+	Copy to lokaal	Klaas, en als hij hiermee klaar is laat hij dit weten aan Jens
+
+GUI
+	Update GUI lokaal	Jens
+	Delete bestand uit heel het systeem	Manu	(In methode public static void delete (String fileName) uit de Node())
+
+
+Opmerking: Probeer ineens comentaar toe te voegen, en structureer waar mogelijk. Het is nu al spaghetti genoeg.

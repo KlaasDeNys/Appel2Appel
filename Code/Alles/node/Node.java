@@ -839,11 +839,11 @@ public class Node extends UnicastRemoteObject implements INode {
 	/***************
 	 * GUI methodes
 	 * ************/
-	public static void open (String fileName) {
+	public static void open (String fileName) {	// The GUI will call this method when the user want to open a file that isn't repressented in the local map.
 		System.out.println("Node void open()");
 	}
 	
-	public static void openLocal (String fileName) {
+	public static void openLocal (String fileName) {	// The GUI will call this method when the user want to open a local file.
 		File file = new File(pathLokaal + fileName);
 		if (file.exists()) {
 			try {
@@ -854,11 +854,11 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 	}
 	
-	public static void delete (String fileName) {
+	public static void delete (String fileName) {	// The GUI will call this method when the user want to remove a file out of the system.
 		System.out.println("Node void delete()");
 	}
 	
-	public static void deleteLocal (String fileName) {	// This method wil be called from the gui to delete a local file.
+	public static void deleteLocal (String fileName) {	// This method will be called from the gui to delete a local file.
 		File file = new File(pathLokaal + fileName);
 		if (file.exists()) {
 			gui.changeLocality(fileName, false);
