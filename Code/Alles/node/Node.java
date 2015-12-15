@@ -844,7 +844,14 @@ public class Node extends UnicastRemoteObject implements INode {
 	}
 	
 	public static void openLocal (String fileName) {
-		
+		File file = new File(pathLokaal + fileName);
+		if (file.exists()) {
+			try {
+				Runtime.getRuntime().exec(pathLokaal + fileName);
+			} catch (IOException e) {
+				System.out.println("Failed to open " + fileName);
+			}
+		}
 	}
 	
 	public static void delete (String fileName) {
