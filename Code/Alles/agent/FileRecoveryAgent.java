@@ -13,7 +13,6 @@ import NameServer.INameServer;
 
 import node.INode;
 import node.Node;
-import node.RMIObject;
 
 public class FileRecoveryAgent extends Agent implements Runnable, Serializable {
 
@@ -88,7 +87,6 @@ public class FileRecoveryAgent extends Agent implements Runnable, Serializable {
 							currentid = nextId;
 							if((currentid == idStart)&&(setup != 0)){ //function must end when it's back at the first node
 								flag = false;
-								RMIObject.flag = false;
 							}	
 						} catch (MalformedURLException | RemoteException | NotBoundException e) {	
 							System.out.println("Agent failed to adapt files " + e);
