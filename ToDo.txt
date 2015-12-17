@@ -4,7 +4,7 @@ Agent:
 	Shutdown	Manu & Kevin
 	Debug		Manu & Kevin
 	CirkelregeneringManu & Kevin
-	Update GUI	Manu & Kevin	(GUI info bij Jens)
+	Update GUI	Manu & Kevin	(GUI info bij Jens) in thread
 
 Node:
 	Copy to lokaal	Klaas, en als hij hiermee klaar is laat hij dit weten aan Jens
