@@ -3,8 +3,6 @@ package node;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -54,6 +52,10 @@ public class YPanel extends JPanel implements ActionListener {
 			}
 		}
 	}
+	
+	public boolean getLocality() {
+		return local;
+	}
 
 	public void actionPerformed(ActionEvent e) {
 		JButton b = (JButton)e.getSource();
@@ -65,18 +67,18 @@ public class YPanel extends JPanel implements ActionListener {
 			deleteLocal ();
 	}
 	
-	private void open () {	
+	private void open () {	// Run this file.
 		if (local)
 			Node.openLocal(fileName);
 		else
 			Node.open(fileName);
 	}
 	
-	private void delete () {
+	private void delete () {	// Remove this file out of the system.
 		Node.delete(fileName);
 	}
 	
-	private void deleteLocal () {
-		Node.delete(fileName);
+	private void deleteLocal () {	// Delete the file from the local map.
+		Node.deleteLocal(fileName);
 	}
 }

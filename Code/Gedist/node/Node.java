@@ -30,13 +30,13 @@ import java.util.Random;
 
 public class Node extends UnicastRemoteObject implements INode {
 	private static final long serialVersionUID = 1L;
-	private static String name;
+	private static String name;		// Name of node, used to calc the id.
 	public static String lnsIp;
 
-	public static int idNext;
-	public static String ipNext;
-	public int idPrev;
-	public static String ipPrev;
+	public static int idNext;	// Id number of the next node.
+	public static String ipNext;	// ip of the next node.
+	public static int idPrev;	// Id number of the previous node.
+	public static String ipPrev;	// Ip of the previous node.
 	public static int idOwn;
 
 	private static String pathLokaal = "c://lokaal/";
@@ -71,11 +71,11 @@ public class Node extends UnicastRemoteObject implements INode {
 		// setNextNode(); // Make connection with the next node.
 		// setPrevNode(); // Make connection with the previous node.
 
-		gui = new NodeGui();
+		gui = new NodeGui(idOwn);
 		gui.setVisible(true);
 	}
 
-	public void shutdown() throws IOException { // Call to shut down this node.
+	public static void shutdown() throws IOException { // Call to shut down this node.
 		/*
 		 * Verwijdern van nameserver. Check Verander de naaste nodes check
 		 * replica, deel uit aan bovenste. Check lokaal, vraag op aan agent of
@@ -266,7 +266,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		local.clear();
 		for (int i = 0; i < localNewList.size(); i++) {
 			String var = localNewList.get(i);
-			gui.addFile(var, true); /*** GUI functie */
+			//gui.addFile(var, true); /*** GUI functie */
 			local.put(var, hasher(var));
 		}
 		// System.out.println("dit is de nieuwe local: " + local);
@@ -487,7 +487,7 @@ public class Node extends UnicastRemoteObject implements INode {
 					INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
 					try {
 						node.deletefile(verwijder);
-						gui.deleteFile(verwijder);
+						//gui.deleteFile(verwijder);
 					} catch (IOException e) {
 
 						e.printStackTrace();
@@ -769,7 +769,7 @@ public class Node extends UnicastRemoteObject implements INode {
 	 ************/
 	public static void open(String fileName) { // The GUI will call this method
 												// when the user want to open a
-												// file that isn't repressented
+												// file that isn't represented
 												// in the local map.
 		System.out.println("Node void open()");
 	}
@@ -780,10 +780,13 @@ public class Node extends UnicastRemoteObject implements INode {
 		File file = new File(pathLokaal + fileName);
 		if (file.exists()) {
 			try {
-				Runtime.getRuntime().exec(pathLokaal + fileName);
+				Process p = Runtime.getRuntime().exec("rundll32 url.dll, FileProtocolHandler " + pathLokaal + fileName);
 			} catch (IOException e) {
-				System.out.println("Failed to open " + fileName);
+				System.out.println("IO exception in Node: void openLocel():\nFailed to run " + fileName + ".\n" + e);
 			}
+		} else {	// When the given file doesn't exist in the local map.
+			gui.changeLocality(fileName, false);
+			open (fileName);	// Call the none local version of this function.
 		}
 	}
 
@@ -799,34 +802,17 @@ public class Node extends UnicastRemoteObject implements INode {
 														// to delete a local
 														// file.
 		File file = new File(pathLokaal + fileName);
-		if (file.exists()) {
-			gui.changeLocality(fileName, false);
+		if (!file.exists()) {	// if the given file doesn't exist in the local folder.
+			gui.changeLocality(fileName, false);	// Remove the button "delete local" from this file.
 			System.out.println(fileName + " is not a local file."); // -------Report
 		} else {
 			if (file.delete()) {
-				gui.changeLocality(fileName, false);
+				gui.changeLocality(fileName, false);	// Remove delete local button when file is successfully removed.
 			} else {
 				System.out.println("Failed to delete " + fileName + " local."); // -------Report
 			}
 		}
 	}
-	/*
-	 * private static void deleteLocal () { final File folder1 = new
-	 * File(pathLokaal); HashMap<String, Integer> LokaalNew =
-	 * listLocalFiles(folder1); ArrayList<String> LokaalNewList = new
-	 * ArrayList<String>(LokaalNew.keySet());
-	 * 
-	 * replica.clear(); for (int i = 0; i < LokaalNewList.size(); i++) { try {
-	 * 
-	 * File file = new File(pathLokaal + LokaalNewList.get(i));
-	 * 
-	 * if (file.delete()) { // System.out.println(file.getName() +
-	 * " is deleted!"); } else { System.out.println(
-	 * "Delete operation is failed, " + LokaalNewList); }
-	 * 
-	 * } catch (Exception e) { System.out.println("Delete operation is failed, "
-	 * + LokaalNewList); e.printStackTrace(); } } }
-	 */
 
 	/***************
 	 * Agent methodes

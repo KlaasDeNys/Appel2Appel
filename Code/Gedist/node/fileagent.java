@@ -13,11 +13,11 @@ import NameServer.INameServer;
 public class fileagent {
 
 	public static HashMap<Integer, HashMap<String, Integer>> localList = new HashMap<Integer, HashMap<String, Integer>>(); // nodeId,
-	// filelist
+	// filelist			//id node		//Filename, lock
 	// file(name,
 	// writeaccess)
 	public static HashMap<Integer, HashMap<String, Integer>> replicaList = new HashMap<Integer, HashMap<String, Integer>>(); // nodeId,
-	// filelist
+	// filelist			//id node		//Filename, lock
 	// file(name,
 	// writeaccess)
 
