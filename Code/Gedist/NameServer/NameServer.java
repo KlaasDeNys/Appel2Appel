@@ -15,14 +15,7 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		super();
 		nameRegister = new TreeMap <Integer, String>();
 	}
-
-	public String lookUp(int id) { // return the ip by the given id.
-		System.out.print("NameServer: lookUp " + id);	// -----report
-		String ip = nameRegister.get(id);
-		System.out.println("\tip: " + ip);	// ----report
-		return ip;	// When the given id isn't represented in the system => null will be returned.
-	}
-
+	
 	public boolean add(int id, String adr) { // Add a node to the system; id => node's id; adr => node's ip
 		System.out.println("NameServer: add procedure\tid: " + id + "\tip: " + adr);	// ----report
 		if (nameRegister.containsKey(id)) {
@@ -43,6 +36,13 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		return false;	// return false, when the given node didn't exist.
 	}
 
+	public String lookUp(int id) { // return the ip by the given id.
+		System.out.print("NameServer: lookUp " + id);	// -----report
+		String ip = nameRegister.get(id);
+		System.out.println("\tip: " + ip);	// ----report
+		return ip;	// When the given id isn't represented in the system => null will be returned.
+	}
+
 	public int getPrev(int id) {	// Returns the lower neighbor of the given node
 		//System.out.println (nameRegister);
 		System.out.print("NameServer: " + id + " entered getPrev\tresult: ");	// ----report
@@ -58,7 +58,7 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		if (prevId == id) { // When the given id is the first element of the map...
 			for (; i.hasNext(); prevId = i.next());
 			System.out.println(prevId);
-			return prevId; // The lates id is the lower neighbor
+			return prevId; // The latest id is the lower neighbor
 		}
 
 		while (true) {	// Check all the node's
@@ -108,7 +108,7 @@ public class NameServer extends UnicastRemoteObject implements INameServer {
 		int currentId = firstId;
 		
 		while (true){
-			if (!i.hasNext()){
+			if (!i.hasNext()){	// When  the file's hash is bigger than the greatest id, the node with the lowest id is the rightful owner.
 				System.out.println(firstId);
 				return firstId;
 			}

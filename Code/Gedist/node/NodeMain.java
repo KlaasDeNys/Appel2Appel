@@ -1,17 +1,15 @@
 package node;
 
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.Scanner;
 
 
 /*
  *
- *	NodeMain have the usasge to launch te RMI service of a node.
+ *	NodeMain have the usage to launch the RMI service of a node.
  *
- *	Their is only a main methode.
+ *	Their is only a main method.
  *
  */
 
@@ -34,28 +32,6 @@ public class NodeMain {
 		node.setNextNode();
 		node.setPrevNode();
 		RMIdone=true;
-		
-		
-		while (true) {	// Standard  work process.
-			System.out.println ("\n[0] shut down\n > ");
-			Scanner scanner = new Scanner (System.in);
-			while(scanner.nextInt() != 0){
-				//fileAgent.run();
-				//Thread.sleep(5000);
-//			int choise = scanner.nextInt();
-//			switch (choise) {
-//			case 0:		// Remove this node from the system.
-			
-			}	
-				node.shutdown ();
-				scanner.close();
-				System.exit(0);
-				break;
-			//default:	// Wrong input.
-			//	System.out.println (choise + " is not an option.");
-			//	break;
-			//}
-		}
 		
 	}
 }

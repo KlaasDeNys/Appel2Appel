@@ -186,6 +186,8 @@ public class Node extends UnicastRemoteObject implements INode {
 
 			}
 		}
+		
+		System.exit(0);	// Stop all processes of this system.
 
 	}
 

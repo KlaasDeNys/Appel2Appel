@@ -11,36 +11,37 @@ import javax.swing.JPanel;
 
 public class NodeGui extends JFrame {
 	private static final long serialVersionUID = 1L;
-	private HashMap <String, YPanel> panelMap;
-	private JPanel mainPanel;
-	private int nodeId;
+	private HashMap <String, YPanel> panelMap;	// Map with all the YPanel's;
+	private JPanel mainPanel;	// Main pannel, this will contains all the YPanel's of the panelMap.
+	private int nodeId;	// The id of the node who's steering this GUI.
 
 	public NodeGui (int nodeId) {
-		super("System Y");
+		super("System Y");	// Set the title of the GUI.
 		this.nodeId = nodeId;
 		setBounds (100,100,450,300);
 		mainPanel = new JPanel ();
 		mainPanel.setLayout (new BoxLayout ( mainPanel, BoxLayout.PAGE_AXIS));
 		add(mainPanel);
-		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		addWindowListener(new WindowListener() {
-			public void windowClosing(WindowEvent arg0) {
+		
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);	// The functionality of the node may not stop when the user press the cros.
+		addWindowListener(new WindowListener() {	// Call the Node.shutdown() procedure when closing for a legal shutdown.
+			public void windowClosing(WindowEvent arg0) {	// When the user press the cross.
 				try {
 					Node.shutdown();
 				} catch (IOException e) {
 					System.out.println("Fault in GUI: failed to shutdown node:\n" + e);
 				}
 			}
-			public void windowActivated(WindowEvent e) {}
-			public void windowClosed(WindowEvent e) {}
-			public void windowDeactivated(WindowEvent e) {}
+			public void windowActivated(WindowEvent e) {}	// When the user pop open the window.
+			public void windowClosed(WindowEvent e) {}	// When the window disappear.
+			public void windowDeactivated(WindowEvent e) {}	// When the user minimize the window.
 			public void windowDeiconified(WindowEvent e) {}
 			public void windowIconified(WindowEvent e) {}
 			public void windowOpened(WindowEvent e) {}
 		});
 		panelMap = new HashMap <String,YPanel> ();
 		
-		Thread checkup = new Thread(){
+		Thread checkup = new Thread(){	// Thread for update the GUI by the lists of the file agent's.
 			public void run () {
 				while (true) {
 					try {
@@ -48,7 +49,7 @@ public class NodeGui extends JFrame {
 					} catch (InterruptedException e) {
 						System.out.println("failed to freeze checkup thread. \n" + e);
 					}
-					updateGui();
+					updateGui();	// Update the GUI.
 				}
 			}
 		};
@@ -56,20 +57,21 @@ public class NodeGui extends JFrame {
 		
 	}
 	
-	public void updateGui() {
-		new fileagent();
+	public void updateGui() {	// Called every 5 seconds to keep the gui up to date.
+		new fileagent();	// The fileagent contains a map with all the files that are circulating in the system.
 		
 		HashMap <String, Integer> presentItems = new HashMap <String, Integer> ();
 		for (Iterator<String> i = panelMap.keySet().iterator(); i.hasNext();){
-			presentItems.put(i.next(), 0);
+			presentItems.put(i.next(), 0);	// Take all the file's who are already represented on the GUI.
+			// So when can later check witch file's are removed out of the system.
 		}
 		
 		for (Iterator<Integer> i = fileagent.localList.keySet().iterator(); i.hasNext();) {
 			Integer id = i.next();			
 			for (Iterator<String> j = fileagent.localList.get(id).keySet().iterator(); j.hasNext();) {
 				String element = j.next();
-				if (presentItems.containsKey(element)) {
-					if(id == nodeId) {
+				if (presentItems.containsKey(element)) {	// If element is already presented on the GUI.
+					if(id == nodeId) {	// Check if the locality is still right.
 						presentItems.put(element, 2);
 						changeLocality(element, true);
 					} else {
@@ -78,8 +80,8 @@ public class NodeGui extends JFrame {
 							changeLocality(element, false);
 						}
 					}
-				} else {
-					if (id == nodeId) {
+				} else {	// If element isn't yet presented on the GUI.
+					if (id == nodeId) {	// Check locality before add the file.
 						addFile(element, true);
 						presentItems.put(element,2);
 					} else {
@@ -92,36 +94,36 @@ public class NodeGui extends JFrame {
 		for (Iterator <String> i = presentItems.keySet().iterator(); i.hasNext();) {
 			String element = i.next();
 			if (presentItems.get(element) == 0) {
-				deleteFile(element);
+				deleteFile(element);	// Delete all the item's who are not presented in the system anymore.
 			}
 		}
 	}
 	
-	private boolean addFile (String fileName, boolean local) {
+	private boolean addFile (String fileName, boolean local) {	// Add a file to the GUI.
 		if(panelMap.containsKey(fileName)) {
-			return false;
+			return false;	// Return false if the file is already represented in the GUI.
 		}
-		YPanel panel = new YPanel (fileName, local);
-		panelMap.put(fileName, panel);
-		mainPanel.add(panelMap.get(fileName));
-		mainPanel.updateUI();
+		YPanel panel = new YPanel (fileName, local);	// Make a new YPanel of the file.
+		panelMap.put(fileName, panel);	// Put the YPanel in the map.
+		mainPanel.add(panelMap.get(fileName));	// Add the panel from the map to the gui (this has a global location).
+		mainPanel.updateUI();	// Update the GUI to make the changes visible.
 		return true;
 	}
 	
-	private boolean deleteFile (String fileName) {
+	private boolean deleteFile (String fileName) {	// Remove a file out of the GUI.
 		if(!panelMap.containsKey(fileName))
-			return false;
+			return false;	// When the file is not represented, false will be returned.
 		mainPanel.remove(panelMap.get(fileName));
-		panelMap.remove(fileName);
-		mainPanel.updateUI();
+		panelMap.remove(fileName);	// Clear all the evidences that this YPanel have ever exist.
+		mainPanel.updateUI();	// Make the changes visible.
 		return true;
 	}
 	
-	public boolean changeLocality (String fileName, boolean local) {
-		if(!panelMap.containsKey(fileName))
-			return false;
+	public boolean changeLocality (String fileName, boolean local) {	// Change the locality of one file.
+		if(!panelMap.containsKey(fileName) || panelMap.get(fileName).getLocality() == local)
+			return false;	// When the given file doesn't exist or when the file has alreay got the given locality, false will be returned.
 		panelMap.get(fileName).changeLocality(local);
-		mainPanel.updateUI();
+		mainPanel.updateUI();	// Make the changes visible.
 		return true;
 	}
 

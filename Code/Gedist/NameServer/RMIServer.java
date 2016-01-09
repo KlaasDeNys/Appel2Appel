@@ -9,7 +9,15 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
- 
+
+/*
+ * The RMIServer has 2 services who's running simultaneously.
+ * 
+ * The RMI: Node's can manage the server by calling his methods via Remote method invocation.
+ * For this service, the Node's has to know the ip of the server.
+ * When a node entered the system, he can send a multicast message to ask the ip.
+ */
+
 public class RMIServer {
 	
 	private static final int RMI_PORT = 1099;	// Port for RMI service
@@ -21,14 +29,14 @@ public class RMIServer {
 		
 	}
 	
-	public static void main (String [] args) {
+	public static void main (String [] args) {	// Main program.
 		try {		// launch RMI service
 			NameServer obj = new NameServer ();
 			Registry registry = LocateRegistry.createRegistry (RMI_PORT);
 			registry.bind("LNS", obj);
-			System.out.println("System online");	//----------------------------------------
+			System.out.println("System online");	// ----report
 		} catch (Exception e) {
-			System.out.println("RMIServer main error:\nfailed to start RMI service.");
+			System.out.println("RMIServer main error:\nfailed to start RMI service.");	// ----report
 		}
 		
 		MulticastSocket socket = null;
@@ -43,12 +51,12 @@ public class RMIServer {
 			
 			while (true) {	// Run multicast service
 				inPacket = new DatagramPacket (inBuf, inBuf.length);
-				socket.receive(inPacket);
-				String msg = new String (inBuf, 0, inPacket.getLength());
-				sendIp (msg);
+				socket.receive(inPacket);	// Wait for an incoming package of a new node.
+				String msg = new String (inBuf, 0, inPacket.getLength());	// The content of the message is the requesting node.
+				sendIp (msg);	// Send server's ip to the node.
 			}
 		} catch (IOException e) {
-			System.out.println ("RMIServer main error:\nMulticast service failed.");
+			System.out.println ("RMIServer main error:\nMulticast service failed.");	// ----report
 		}
 	}
 	
@@ -61,13 +69,13 @@ public class RMIServer {
 			byte[] bMessage = message.getBytes();
 			InetAddress aNode = InetAddress.getByName(nodeIp);
 
-			DatagramPacket request = new DatagramPacket(bMessage, message.length(), aNode, TCP_PORT);
+			DatagramPacket request = new DatagramPacket(bMessage, message.length(), aNode, TCP_PORT);	// TCP package with the ip address.
 			aSocket.send(request);
 
 		} catch (SocketException e) {
-			System.out.println("RMIServer sendIp error:\nSocketException");
+			System.out.println("RMIServer sendIp error:\nSocketException");	// ----report
 		} catch (IOException e) {
-			System.out.println("RMIServer sendIp error:\nIOException");
+			System.out.println("RMIServer sendIp error:\nIOException");	// ----report
 		}
 	}
 	
@@ -78,7 +86,7 @@ public class RMIServer {
 			address = InetAddress.getLocalHost();
 			hostIp = address.getHostAddress();
 		} catch (UnknownHostException e) {
-			System.out.println ("RMIServer ip error:\nFailed to discover server ip");
+			System.out.println ("RMIServer ip error:\nFailed to discover server ip");	// ----report
 			return null;
 		}
 		return hostIp;

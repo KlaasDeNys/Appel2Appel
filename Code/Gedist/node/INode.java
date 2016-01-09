@@ -3,7 +3,6 @@ package node;
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public interface INode extends Remote {
