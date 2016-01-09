@@ -10,7 +10,7 @@ public class ThreadFiles extends Thread{
 			   
 			   Thread.sleep(5000);	//Checks every 5s
 		   } catch(Exception e){
-			   System.out.println("Thread is ended! The error is " + e.getMessage());
+			   System.out.println("Thread is ended! The error is " + e.getMessage());	// ----report
 		   }
 		   if(!flag)		//Only when the flag is false, the thread ends
 			   return;
@@ -19,9 +19,9 @@ public class ThreadFiles extends Thread{
 		   try {
 			   //if (Node.ipNext != null && Node.ipNext != Node.ip()){
 			Node.doubles(Node.local, Node.replica);
-			fileagent.sendList();
+			fileagent.sendList();	// Update the Hashmap of the fileAgent
 		
-			run();
+			run();	// Create a loop.
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -32,8 +32,8 @@ public class ThreadFiles extends Thread{
 		   
 	   }
 	   
-	   public static void main(String args[]) {
+	   /*public static void main(String args[]) {
 		   //agent.FileListAgent fileAgent = new FileListAgent();
 		   (new ThreadFiles()).start();
-	   }
+	   }*/
 }

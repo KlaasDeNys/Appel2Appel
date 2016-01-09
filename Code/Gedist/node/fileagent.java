@@ -59,7 +59,7 @@ public class fileagent {
 	}
 
 	public static boolean existLocal(int id, String filename) {
-		// Bestaat ook lokaal ergens anders
+		// Exist also in the local foler of an other node
 
 		ArrayList<Integer> templistnode = new ArrayList<Integer>(localList.keySet());
 		for (int i = 0; i < templistnode.size(); i++) {
@@ -107,8 +107,8 @@ public class fileagent {
 	public static void failure() {
 		int id = Node.idNext;
 		System.out.println("Failure:  " + Node.idNext);
-		// Meld dood aan nameserver
-		// Vraag volgende buur aan nameserver
+		// Meld failure to nameServer
+		// Ask next neighbor from the nameServer
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + Node.lnsIp + "/LNS");
 			lns.delete(Node.idNext);
@@ -117,7 +117,7 @@ public class fileagent {
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			System.out.println("failed to connect the server");
 		}
-		// Verplaatsbestanden van replica naar Next indien nodig
+		// Move files from replica to next when necessarily.
 		try {
 			Node.VerplaatsenNextPrevNode(Node.idNext);
 		} catch (IOException e) {
@@ -125,7 +125,7 @@ public class fileagent {
 		}
 
 		if (Node.ipNext != null) {
-			// Verander previd volgendebuur
+			// Change prevId of next neighbor.
 			try {
 				INode nextnode = (INode) Naming.lookup("//" + Node.ipNext + "/node");
 				nextnode.changePrevNode(Node.idOwn, Node.ip());
@@ -143,14 +143,14 @@ public class fileagent {
 			String filename;
 			ArrayList<String> templistfile = new ArrayList<String>(templist.keySet());
 			for (int i = 0; i < templistfile.size(); i++) {
-				// Replica--> bestaan lokaal ergens anders? --> Vraag nieuw
-				// adres op, vraag locatie op waar het lokaal te vinden is
-				// en laat bestand van lokaal naar replica kopieren
+				// When Replica's also exist in the local folder somwhere else => 
+				// Ask new address and the location where we can find it in a local folder
+				// Copie files from that local folder to this node's replica folder
 
 				filename = templistfile.get(i);
 				if (existLocal(id, filename) == true) {
-
-					// vraag locatie op waar het lokaal te vinden is
+					
+					// Ask location where we can find it in a local folder
 					ArrayList<Integer> templistnode = new ArrayList<Integer>(localList.keySet());
 					int idTempLocalFile = 0;
 					for (int j = 0; j < templistnode.size(); j++) {
@@ -165,13 +165,13 @@ public class fileagent {
 							}
 						}
 					}
-					//vraag ip van locaal en van replica
+					// Ask ip from the of the local - and replica copy.
 					try {
 						INameServer lns = (INameServer) Naming.lookup("//" + Node.lnsIp + "/LNS");
 						int idTempReplicaFile = lns.getNode(filename);
 						String ipTempReplicaFile = lns.lookUp(idTempReplicaFile);
 						String ipTempLocalFile = lns.lookUp(idTempLocalFile);
-						// Kopieeer van lokaal naar replica
+						// Copy from local to replica
 						try {
 							INode nodeLocal = (INode) Naming.lookup("//" + ipTempLocalFile + "/node");
 							System.out.println("Recover " + filename);
@@ -186,14 +186,13 @@ public class fileagent {
 				}
 
 			}
-
-			// Lokaal --> Bestaat lokaal ergens anders? false --> Replica
-			// verwijderen
+			
+			// If their is no other local copy, the replica will be removed.
 			templist.clear();
 			templist.putAll(localList.get(id));
 			templistfile.clear();
 			templistfile =  new ArrayList<String>(templist.keySet());
-			// alle local bestanden van localbuur
+			// All local files from the local folder of the neighbour
 			for (int i = 0; i < templistfile.size(); i++) {
 				filename = templistfile.get(i);
 				if (existLocal(id, filename) == false) {
@@ -216,7 +215,7 @@ public class fileagent {
 				}
 			}
 		}
-		// Wis Hashmap dode buur
+		// Remove the Hashmap of the death neighbor
 		localList.remove(id);
 		replicaList.remove(id);
 		// Send Hashmap to NextNode
