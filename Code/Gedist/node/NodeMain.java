@@ -6,7 +6,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
 
-import agent.FileListAgent;
 
 /*
  *
@@ -21,9 +20,9 @@ public class NodeMain {
 	
 	public static void main (String [] args) throws InterruptedException, IOException {
 		Node node = new Node ();	// Create a new Node
-		agent.FileListAgent fileAgent = new FileListAgent(); //Create a new FileListAgent
+		//agent.FileListAgent fileAgent = new FileListAgent(); //Create a new FileListAgent
 		try {	// Launch RMI
-			Registry registry = LocateRegistry.createRegistry(1098);
+			Registry registry = LocateRegistry.createRegistry(1099);
 			registry.bind ("node", node);
 			
 		} catch (Exception e) {
@@ -35,6 +34,7 @@ public class NodeMain {
 		node.setNextNode();
 		node.setPrevNode();
 		RMIdone=true;
+		
 		
 		while (true) {	// Standard  work process.
 			System.out.println ("\n[0] shut down\n > ");

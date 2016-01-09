@@ -28,10 +28,6 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.Random;
 
-import agent.Agent;
-import agent.FileListAgent;
-import agent.FileRecoveryAgent;
-
 public class Node extends UnicastRemoteObject implements INode {
 	private static final long serialVersionUID = 1L;
 	private static String name;
@@ -40,18 +36,18 @@ public class Node extends UnicastRemoteObject implements INode {
 	public static int idNext;
 	public static String ipNext;
 	public int idPrev;
-	public String ipPrev;
-	public int idOwn;
+	public static String ipPrev;
+	public static int idOwn;
 
 	private static String pathLokaal = "c://lokaal/";
 	private static String pathReplica = "c://replica/";
 	public static HashMap<String, Integer> local = new HashMap<String, Integer>();
 	public static HashMap<String, Integer> replica = new HashMap<String, Integer>();
-	public static HashMap<String, Boolean> filesSystemNode = new HashMap<String,Boolean>();
-	private static Agent ag = new Agent(){;
-	public void run(){}};
+	public static HashMap<String, Boolean> filesSystemNode = new HashMap<String, Boolean>();
+	// private static Agent ag = new Agent(){;
+	// public void run(){}};
 	public boolean bootstrap;
-	
+
 	public static NodeGui gui;
 
 	/*************************
@@ -74,7 +70,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		// while (NodeMain.RMIdone==false);
 		// setNextNode(); // Make connection with the next node.
 		// setPrevNode(); // Make connection with the previous node.
-		
+
 		gui = new NodeGui();
 		gui.setVisible(true);
 	}
@@ -87,18 +83,36 @@ public class Node extends UnicastRemoteObject implements INode {
 		 * andere nodes.
 		 * 
 		 */
-		if (idNext == idOwn ||idNext == 0) {
+
+		// Wis eigen Hashmap
+		fileagent.localList.remove(idOwn);
+		fileagent.replicaList.remove(idOwn);
+
+		// Send Hashmap to NextNode and catch
+		if (ipNext != null) {
+			try {
+				INode nextnode = (INode) Naming.lookup("//" + ipNext + "/node");
+				nextnode.refreshAgent(fileagent.localList, fileagent.replicaList);
+			} catch (MalformedURLException e) {
+				fileagent.failure();
+			} catch (RemoteException e) {
+				fileagent.failure();
+			} catch (NotBoundException e) {
+				fileagent.failure();
+			}
+		}
+
+		if (idNext == idOwn || idNext == 0) {
 			// verwijder van nameserver
 			try {
 				INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
 				lns.delete(hasher(name));
 			} catch (MalformedURLException | RemoteException | NotBoundException e) {
 				System.out.println("failed to connect the server");
-				failure(ag);
 			}
 			return;
 		}
-		// Verander de naaste nodes check replica, deel uit aan bovenste.
+		// Verander de naaste nodes check replica, deel uit aan onderste.
 		if (ipNext != null && ipNext != ip()) {
 			final File folder1 = new File(pathReplica);
 			HashMap<String, Integer> replicaNew = listLocalFiles(folder1);
@@ -106,15 +120,15 @@ public class Node extends UnicastRemoteObject implements INode {
 			ArrayList<String> replicaList = new ArrayList<String>(replica.keySet());
 			compare(replicaList, replicaNewList);
 			System.out.println("Contents of replica: " + replicaList);
-			move(replicaList, idPrev);
-
+			if (replicaList.size() != 0) {
+				move(replicaList, idNext);
+			}
 		}
 		try {
 			INode nextNode = (INode) Naming.lookup("//" + ipNext + "/node");
 			nextNode.changePrevNode(idPrev, ipPrev);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			System.out.println("failed to connect to nextNode");
-			failure(ag);
 		}
 
 		try {
@@ -122,7 +136,6 @@ public class Node extends UnicastRemoteObject implements INode {
 			prevNode.changeNextNode(idNext, ipNext);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			System.out.println("failed to connect to prevNode");
-			failure(ag);
 		}
 		// verwijder van nameserver
 		try {
@@ -130,12 +143,11 @@ public class Node extends UnicastRemoteObject implements INode {
 			lns.delete(hasher(name));
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			System.out.println("failed to connect the server");
-			failure(ag);
 		}
 
 		// Lokaal nakijken,
 		// vraag aan agent op of het nog ergens anders in lokaal bestaat.
-		// Wis replica's indien niet lokaal op andere nodes
+		// Wis replica's in het netwerk indien niet lokaal op andere nodes
 		final File folder1 = new File(pathLokaal);
 		HashMap<String, Integer> lokaal = listLocalFiles(folder1);
 		ArrayList<String> lokaalList = new ArrayList<String>(lokaal.keySet());
@@ -143,16 +155,14 @@ public class Node extends UnicastRemoteObject implements INode {
 
 		for (int i = 0; i < lokaalList.size(); i++) {
 			String filename = lokaalList.get(i);
-			if (false == false) {// Bestaatlokaalergensanders(idOwn, filename)
+			if (false == fileagent.existLocal(idOwn, filename)) {// Bestaatlokaalergensanders(idOwn,
+																	// filename)
 
 				System.out.println("Bestaat nergens anders " + filename);
 				String ipfilenode;
 				try {
 					INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
 					int idnode = lns.getNode(filename);
-					/*
-					 * if (idnode == hasher(name)) { idnode = idPrev; }
-					 */
 					ipfilenode = lns.lookUp(idnode);
 					System.out.println("ID delete: " + idnode);
 					try {
@@ -160,7 +170,6 @@ public class Node extends UnicastRemoteObject implements INode {
 						try {
 							node.deletefile(filename);
 						} catch (IOException e) {
-							failure(ag);
 							e.printStackTrace();
 						}
 
@@ -168,13 +177,10 @@ public class Node extends UnicastRemoteObject implements INode {
 						e.printStackTrace();
 					}
 				} catch (MalformedURLException e) {
-					failure(ag);
 					System.out.println("Node.getNode (): MalformedURLException\n\n" + e);
 				} catch (RemoteException e) {
-					failure(ag);
 					System.out.println("Node.getNode (): RemoteException\n\n" + e);
 				} catch (NotBoundException e) {
-					failure(ag);
 					System.out.println("Node.getNode (): NotBoundException\n\n" + e);
 				}
 
@@ -183,7 +189,7 @@ public class Node extends UnicastRemoteObject implements INode {
 
 	}
 
-	private void move(ArrayList<String> replicaList, int idNextPrev)throws IOException {
+	private static void move(ArrayList<String> replicaList, int idNextPrev) throws IOException {
 		String ip;
 		if (idNextPrev == idNext) {
 			ip = ipNext;
@@ -223,10 +229,8 @@ public class Node extends UnicastRemoteObject implements INode {
 				servsock.close();
 				bis.close();
 			} catch (MalformedURLException | RemoteException | NotBoundException e) {
-				failure(ag);
 				e.printStackTrace();
 			} catch (IOException e) {
-				failure(ag);
 				e.printStackTrace();
 			}
 
@@ -243,7 +247,6 @@ public class Node extends UnicastRemoteObject implements INode {
 
 			} catch (Exception e) {
 				System.out.println("Delete operation is failed, " + filename);
-				failure(ag);
 				e.printStackTrace();
 			}
 		}
@@ -263,7 +266,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		local.clear();
 		for (int i = 0; i < localNewList.size(); i++) {
 			String var = localNewList.get(i);
-			gui.addFile (var, true);	/*** GUI functie */
+			gui.addFile(var, true); /*** GUI functie */
 			local.put(var, hasher(var));
 		}
 		// System.out.println("dit is de nieuwe local: " + local);
@@ -291,7 +294,8 @@ public class Node extends UnicastRemoteObject implements INode {
 	 * Process Attributes
 	 *************************/
 
-	private void getNameServerIp()throws IOException { // Look for the ip of the name server
+	private void getNameServerIp() throws IOException { // Look for the ip of
+														// the name server
 		DatagramSocket socket = null;
 		DatagramPacket outPacket = null;
 		byte[] outBuf;
@@ -303,7 +307,6 @@ public class Node extends UnicastRemoteObject implements INode {
 			outPacket = new DatagramPacket(outBuf, outBuf.length, address, 8888);
 			socket.send(outPacket);
 		} catch (IOException e) {
-			failure(ag);
 			System.out.println("multicast: IOException\n" + e);
 		}
 		socket.close();
@@ -318,16 +321,15 @@ public class Node extends UnicastRemoteObject implements INode {
 			lnsIp = new String(request.getData());
 			lnsIp = trim(lnsIp);
 		} catch (SocketException e) {
-			failure(ag);
 			System.out.println("UDP: SocketException: " + e.getMessage());
 		} catch (IOException e) {
-			failure(ag);
 			System.out.println("UDP: IOException: " + e.getMessage());
 		}
 		aSocket.close();
 	}
 
-	private boolean addToSystem() throws IOException{ // Add this node to the system.
+	private boolean addToSystem() throws IOException { // Add this node to the
+														// system.
 
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
@@ -336,21 +338,19 @@ public class Node extends UnicastRemoteObject implements INode {
 				return true;
 			}
 		} catch (MalformedURLException e) {
-			failure(ag);
 			System.out.println("Node.addToSystem (): MalformedURLException\n\n" + e);
 		} catch (RemoteException e) {
-			failure(ag);
 			System.out.println("Node.addToSystem (): RemoteException\n\n" + e);
 		} catch (NotBoundException e) {
-			failure(ag);
 			System.out.println("Node.addToSystem (): NotBoundException\n\n" + e);
 		}
 		System.out.println("Node.addToSystem ():\tfailled to add id");
 		return false;
 	}
 
-	public boolean setNextNode() throws IOException{ // when this function is called, this node
-									// would contact his upper neighbor.
+	public boolean setNextNode() throws IOException { // when this function is
+														// called, this node
+		// would contact his upper neighbor.
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
 			idNext = lns.getNext(hasher(name));
@@ -362,15 +362,12 @@ public class Node extends UnicastRemoteObject implements INode {
 				System.out.println("Node message: Next node: ip: " + ipNext + " id: " + idNext);
 			}
 		} catch (MalformedURLException e) {
-			failure(ag);
 			System.out.println("Node: setNextNode (): MalformedURLException:\n" + e);
 			return false;
 		} catch (RemoteException e) {
-			failure(ag);
 			System.out.println("Node: setNextNode (): RemoteException:\n" + e);
 			return false;
 		} catch (NotBoundException e) {
-			failure(ag);
 			System.out.println("Node: setNextNode (): NotBoundException:\n" + e);
 			return false;
 		}
@@ -380,19 +377,16 @@ public class Node extends UnicastRemoteObject implements INode {
 			nextNode.changePrevNode(hasher(name), ip());
 			return true;
 		} catch (MalformedURLException e) {
-			failure(ag);
 			System.out.println("Node: setNextNode (): MalformedURLException: (to node)\n" + e);
 		} catch (RemoteException e) {
-			failure(ag);
 			System.out.println("Node: setNextNode (): RemoteException: (to node)\n" + e);
 		} catch (NotBoundException e) {
-			failure(ag);
 			System.out.println("Node: setNextNode (): NotBoundException: (to node)\n" + e);
 		}
 		return false;
 	}
 
-	public boolean setPrevNode() throws IOException{
+	public boolean setPrevNode() throws IOException {
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
 			idPrev = lns.getPrev(hasher(name));
@@ -404,15 +398,12 @@ public class Node extends UnicastRemoteObject implements INode {
 				System.out.println("Node message: Prev node: ip: " + ipPrev + " id: " + idPrev);
 			}
 		} catch (MalformedURLException e) {
-			failure(ag);
 			System.out.println("Node: setPrevNode (): MalformedURLException:\n" + e);
 			return false;
 		} catch (RemoteException e) {
-			failure(ag);
 			System.out.println("Node: setPrevNode (): RemoteException:\n" + e);
 			return false;
 		} catch (NotBoundException e) {
-			failure(ag);
 			System.out.println("Node: setPrevNode (): NotBoundException:\n" + e);
 			return false;
 		}
@@ -422,15 +413,12 @@ public class Node extends UnicastRemoteObject implements INode {
 			prevNode.changeNextNode(hasher(name), ip());
 
 		} catch (MalformedURLException e) {
-			failure(ag);
 			System.out.println("Node: setPrevNode (): MalformedURLException: (to node)\n" + e);
 			return false;
 		} catch (RemoteException e) {
-			failure(ag);
 			System.out.println("Node: setPrevNode (): RemoteException: (to node)\n" + e);
 			return false;
 		} catch (NotBoundException e) {
-			failure(ag);
 			System.out.println("Node: setPrevNode (): NotBoundException: (to node)\n" + e);
 			return false;
 		}
@@ -512,17 +500,6 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 	}
 
-	public void failure(Agent ag) throws RemoteException
-	{
-		ag = new FileRecoveryAgent(idOwn,idNext);
-		ag.run();
-		System.out.println("Starting failure procedure...");
-		
-	//	agent.FileRecoveryAgent fileAgent = new FileRecoveryAgent(idOwn, idNext);
-	//	RMIObject r = new RMIObject(ag);
-		//fileAgent.run();
-	}
-	
 	/*************************
 	 * RMI methods
 	 *************************/
@@ -559,21 +536,13 @@ public class Node extends UnicastRemoteObject implements INode {
 
 	}
 
-	public void VerplaatsenNextPrevNode(int idNextPrev) throws IOException{
+	public static void VerplaatsenNextPrevNode(int idNextPrev) throws IOException {
 		final File folder1 = new File(pathReplica);
 		HashMap<String, Integer> replica = listLocalFiles(folder1);
 		ArrayList<String> replicaNames = new ArrayList<String>(replica.keySet());
 		ArrayList<String> replicaMoves = new ArrayList<String>();
 		for (int i = 0; i < replicaNames.size(); i++) {
-			/*
-			 * if (hasher(replicaNames.get(i)) >= idNextPrev&&
-			 * hasher(replicaNames.get(i))<idOwn) {
-			 * replicaMoves.add(replicaNames.get(i)); System.out.println(
-			 * "Te Verplaatsen: " + replicaNames.get(i) +"\t Hash: "+
-			 * hasher(replicaNames.get(i))); }else{ System.out.println(
-			 * "Blijft op positie : " + replicaNames.get(i) +"\t Hash: " +
-			 * hasher(replicaNames.get(i))); }
-			 */
+
 			if (lookupFile(replicaNames.get(i)) == idNextPrev) {
 				replicaMoves.add(replicaNames.get(i));
 				System.out
@@ -588,13 +557,27 @@ public class Node extends UnicastRemoteObject implements INode {
 			try {
 				move(replicaMoves, idNextPrev);
 			} catch (IOException e) {
-				failure(ag);
 				e.printStackTrace();
 			}
 		}
 	}
 
-	public void getFile(int portNr, String ip, String filename) throws IOException{	// Called when an other node has to send a replica of a file to this node.
+	public void getFile(int portNr, String ip, String filename) throws IOException { // Called
+																						// when
+																						// an
+																						// other
+																						// node
+																						// has
+																						// to
+																						// send
+																						// a
+																						// replica
+																						// of
+																						// a
+																						// file
+																						// to
+																						// this
+																						// node.
 		try {
 			Socket sock = new Socket(ip, portNr);
 			byte[] mybytearray = new byte[6022386];
@@ -616,7 +599,6 @@ public class Node extends UnicastRemoteObject implements INode {
 			sock.close();
 			bos.close();
 		} catch (IOException e) {
-			failure(ag);
 			System.out.println("IOException in getFile():\n" + e);
 		}
 	}
@@ -626,7 +608,6 @@ public class Node extends UnicastRemoteObject implements INode {
 
 			File file = new File(pathReplica + filename);
 			filesSystemNode.remove(filename);
-			agent.FileListAgent.files_in_system.remove(filename);
 			if (file.delete()) {
 				// System.out.println(file.getName() + " is deleted!");
 			} else {
@@ -634,7 +615,6 @@ public class Node extends UnicastRemoteObject implements INode {
 			}
 
 		} catch (Exception e) {
-			failure(ag);
 			e.printStackTrace();
 		}
 
@@ -695,50 +675,22 @@ public class Node extends UnicastRemoteObject implements INode {
 				}
 
 			} catch (Exception e) {
-				failure(ag);
 				System.out.println("Delete operation is failed, " + replicaNewList);
 				e.printStackTrace();
 			}
 		}
 	}
-	
-	/*private static void deleteLocal () {
-		final File folder1 = new File(pathLokaal);
-		HashMap<String, Integer> LokaalNew = listLocalFiles(folder1);
-		ArrayList<String> LokaalNewList = new ArrayList<String>(LokaalNew.keySet());
 
-		replica.clear();
-		for (int i = 0; i < LokaalNewList.size(); i++) {
-			try {
-
-				File file = new File(pathLokaal + LokaalNewList.get(i));
-
-				if (file.delete()) {
-					// System.out.println(file.getName() + " is deleted!");
-				} else {
-					System.out.println("Delete operation is failed, " + LokaalNewList);
-				}
-
-			} catch (Exception e) {
-				System.out.println("Delete operation is failed, " + LokaalNewList);
-				e.printStackTrace();
-			}
-		}
-	}*/
-	
-	public int lookupFile(String filename) throws IOException {
+	public static int lookupFile(String filename) throws IOException {
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
 			return lns.getNode(filename);
 
 		} catch (MalformedURLException e) {
-			failure(ag);
 			System.out.println("Node.lookupFile (): MalformedURLException\n\n" + e);
 		} catch (RemoteException e) {
-			failure(ag);
 			System.out.println("Node.lookupFile (): RemoteException\n\n" + e);
 		} catch (NotBoundException e) {
-			failure(ag);
 			System.out.println("Node.lookupFile (): NotBoundException\n\n" + e);
 		}
 		return 0;
@@ -812,38 +764,19 @@ public class Node extends UnicastRemoteObject implements INode {
 
 	}
 
-/*	public void run() throws InterruptedException, IOException {
-		boolean flag = true;
-		System.out.println("Thread control files started...");
-		try {
-			Thread.sleep(5000); // Checks every 5s
-		} catch (Exception e) {
-			System.out.println("Thread is ended! The error is " + e.getMessage());
-		}
-		if (!flag) // Only when the flag is false, the thread ends
-			return;
-		else
-			run();
-		final File folder = new File(pathLokaal);
-		*
-		 * HashMap<String, Integer> local = listLocalFiles(folder); final File
-		 * folder1 = new File(pathReplica); HashMap<String, Integer> replica =
-		 * listReplicaFiles(folder1);
-		 *
-		System.out.println("Contents of local files: " + local);
-		System.out.println("Contents of replica files: " + replica);
-		doubles(local, replica);
-	}
-*/
-	
 	/***************
 	 * GUI methodes
-	 * ************/
-	public static void open (String fileName) {	// The GUI will call this method when the user want to open a file that isn't repressented in the local map.
+	 ************/
+	public static void open(String fileName) { // The GUI will call this method
+												// when the user want to open a
+												// file that isn't repressented
+												// in the local map.
 		System.out.println("Node void open()");
 	}
-	
-	public static void openLocal (String fileName) {	// The GUI will call this method when the user want to open a local file.
+
+	public static void openLocal(String fileName) { // The GUI will call this
+													// method when the user want
+													// to open a local file.
 		File file = new File(pathLokaal + fileName);
 		if (file.exists()) {
 			try {
@@ -853,22 +786,96 @@ public class Node extends UnicastRemoteObject implements INode {
 			}
 		}
 	}
-	
-	public static void delete (String fileName) {	// The GUI will call this method when the user want to remove a file out of the system.
+
+	public static void delete(String fileName) { // The GUI will call this
+													// method when the user want
+													// to remove a file out of
+													// the system.
 		System.out.println("Node void delete()");
 	}
-	
-	public static void deleteLocal (String fileName) {	// This method will be called from the gui to delete a local file.
+
+	public static void deleteLocal(String fileName) { // This method will be
+														// called from the gui
+														// to delete a local
+														// file.
 		File file = new File(pathLokaal + fileName);
 		if (file.exists()) {
 			gui.changeLocality(fileName, false);
-			System.out.println(fileName + " is not a local file.");	//-------Report
+			System.out.println(fileName + " is not a local file."); // -------Report
 		} else {
 			if (file.delete()) {
 				gui.changeLocality(fileName, false);
 			} else {
-				System.out.println("Failed to delete " + fileName + " local.");	//-------Report
+				System.out.println("Failed to delete " + fileName + " local."); // -------Report
 			}
+		}
+	}
+	/*
+	 * private static void deleteLocal () { final File folder1 = new
+	 * File(pathLokaal); HashMap<String, Integer> LokaalNew =
+	 * listLocalFiles(folder1); ArrayList<String> LokaalNewList = new
+	 * ArrayList<String>(LokaalNew.keySet());
+	 * 
+	 * replica.clear(); for (int i = 0; i < LokaalNewList.size(); i++) { try {
+	 * 
+	 * File file = new File(pathLokaal + LokaalNewList.get(i));
+	 * 
+	 * if (file.delete()) { // System.out.println(file.getName() +
+	 * " is deleted!"); } else { System.out.println(
+	 * "Delete operation is failed, " + LokaalNewList); }
+	 * 
+	 * } catch (Exception e) { System.out.println("Delete operation is failed, "
+	 * + LokaalNewList); e.printStackTrace(); } } }
+	 */
+
+	/***************
+	 * Agent methodes
+	 ************/
+	public void refreshAgent(HashMap<Integer, HashMap<String, Integer>> localList,
+			HashMap<Integer, HashMap<String, Integer>> replicaList) throws RemoteException {
+		try {
+			fileagent.refreshList(localList, replicaList);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	public void copyLocalToReplica(String ipReplica, String filename) throws RemoteException {
+		try {
+			final int socketPort = getSocketPort();
+			ServerSocket servsock = new ServerSocket(socketPort);
+			File myFile = new File(pathLokaal + filename);
+			final INode node = (INode) Naming.lookup("//" + ipReplica + "/node");
+
+			Thread getFileThread = new Thread() {
+				public void run() {
+					try {
+						node.getFile(socketPort, ip(), filename);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			};
+			getFileThread.start();
+
+			Socket sock = servsock.accept();
+			byte[] mybytearray = new byte[(int) myFile.length()];
+			FileInputStream fis = new FileInputStream(myFile);
+			BufferedInputStream bis = new BufferedInputStream(fis);
+			bis.read(mybytearray, 0, mybytearray.length);
+			OutputStream os = sock.getOutputStream();
+			os.write(mybytearray, 0, mybytearray.length);
+			while (getFileThread.isAlive())
+				;
+			os.flush();
+			servsock.close();
+			bis.close();
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }
