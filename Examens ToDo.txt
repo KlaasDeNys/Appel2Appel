@@ -1,0 +1,17 @@
+Ppt maken:				Manu
+
+Comentaar schrijven:			Manu						=> 23/01
+
+Deftige Error messages fixen:		Jens						=> 22/01
+
+Delete overal knop:			Klaas	=> Jens					=> 21/01
+
+Open knop fixen:			Klaas methodes => Jens linken met GUI		=> 21/01
+
+Parallel downloaden van bestanden:	Kevin	(Zie slides, extra opties?)		=> 22/01
+
+
+----------------------------------------
+Extra:
+Namen velden en methodes verbeteren
+Slinken
