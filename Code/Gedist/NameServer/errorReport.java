@@ -80,5 +80,7 @@ public class errorReport extends JFrame implements ActionListener {
 		errorPanel.add(Box.createRigidArea(new Dimension(0,10)));
 		
 		add(errorPanel);
+		
+		setVisible(true);
 	}
 }

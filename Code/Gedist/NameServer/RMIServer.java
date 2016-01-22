@@ -34,9 +34,9 @@ public class RMIServer {
 			NameServer obj = new NameServer ();
 			Registry registry = LocateRegistry.createRegistry (RMI_PORT);
 			registry.bind("LNS", obj);
-			System.out.println("System online");	// ----report
+			new errorReport ("Server message", "System Y online");
 		} catch (Exception e) {
-			System.out.println("RMIServer main error:\nfailed to start RMI service.");	// ----report
+			new errorReport ("RMI error", "Failure when launching RMI service.");
 		}
 		
 		MulticastSocket socket = null;
@@ -56,7 +56,7 @@ public class RMIServer {
 				sendIp (msg);	// Send server's ip to the node.
 			}
 		} catch (IOException e) {
-			System.out.println ("RMIServer main error:\nMulticast service failed.");	// ----report
+			new errorReport ("Multicast error","Failed to receive message in multicast Socket at port " + MULTICAST_PORT + ". (IOException)");
 		}
 	}
 	
@@ -73,9 +73,9 @@ public class RMIServer {
 			aSocket.send(request);
 
 		} catch (SocketException e) {
-			System.out.println("RMIServer sendIp error:\nSocketException");	// ----report
+			new errorReport ("TCP error","Failed to send server's ip to " + nodeIp + " on port " + TCP_PORT + ". (SocketException)");
 		} catch (IOException e) {
-			System.out.println("RMIServer sendIp error:\nIOException");	// ----report
+			new errorReport ("TCP error","Failed to send server's ip to " + nodeIp + " on port " + TCP_PORT + ". (IOException)");
 		}
 	}
 	
@@ -86,7 +86,7 @@ public class RMIServer {
 			address = InetAddress.getLocalHost();
 			hostIp = address.getHostAddress();
 		} catch (UnknownHostException e) {
-			System.out.println ("RMIServer ip error:\nFailed to discover server ip");	// ----report
+			new errorReport ("Server can't determine system's ip. Be sure your network interface is configured. (UnknownHostException)");
 			return null;
 		}
 		return hostIp;
