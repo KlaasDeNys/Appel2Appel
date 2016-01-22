@@ -1,4 +1,4 @@
-package node;
+  package node;
 
 import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
@@ -32,6 +32,5 @@ public class NodeMain {
 		node.setNextNode();
 		node.setPrevNode();
 		RMIdone=true;
-		
 	}
 }

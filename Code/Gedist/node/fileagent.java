@@ -1,5 +1,6 @@
 package node;
 
+import java.util.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -13,11 +14,11 @@ import NameServer.INameServer;
 public class fileagent {
 
 	public static HashMap<Integer, HashMap<String, Integer>> localList = new HashMap<Integer, HashMap<String, Integer>>(); // nodeId,
-	// filelist			//id node		//Filename, lock
+	// filelist //id node //Filename, lock
 	// file(name,
 	// writeaccess)
 	public static HashMap<Integer, HashMap<String, Integer>> replicaList = new HashMap<Integer, HashMap<String, Integer>>(); // nodeId,
-	// filelist			//id node		//Filename, lock
+	// filelist //id node //Filename, lock
 	// file(name,
 	// writeaccess)
 
@@ -95,8 +96,8 @@ public class fileagent {
 		// Replace own part
 		localList.put(Node.idOwn, templocal);
 		replicaList.put(Node.idOwn, tempreplica);
-		System.out.println("Local:  " + localList);
-		System.out.println("Replica:  " + replicaList);
+		//System.out.println("Local:  " + localList);
+		//System.out.println("Replica:  " + replicaList);
 
 	}
 
@@ -143,13 +144,16 @@ public class fileagent {
 			String filename;
 			ArrayList<String> templistfile = new ArrayList<String>(templist.keySet());
 			for (int i = 0; i < templistfile.size(); i++) {
-				// When Replica's also exist in the local folder somwhere else => 
-				// Ask new address and the location where we can find it in a local folder
-				// Copie files from that local folder to this node's replica folder
+				// When Replica's also exist in the local folder somwhere else
+				// =>
+				// Ask new address and the location where we can find it in a
+				// local folder
+				// Copie files from that local folder to this node's replica
+				// folder
 
 				filename = templistfile.get(i);
 				if (existLocal(id, filename) == true) {
-					
+
 					// Ask location where we can find it in a local folder
 					ArrayList<Integer> templistnode = new ArrayList<Integer>(localList.keySet());
 					int idTempLocalFile = 0;
@@ -186,17 +190,17 @@ public class fileagent {
 				}
 
 			}
-			
+
 			// If their is no other local copy, the replica will be removed.
 			templist.clear();
 			templist.putAll(localList.get(id));
 			templistfile.clear();
-			templistfile =  new ArrayList<String>(templist.keySet());
+			templistfile = new ArrayList<String>(templist.keySet());
 			// All local files from the local folder of the neighbour
 			for (int i = 0; i < templistfile.size(); i++) {
 				filename = templistfile.get(i);
 				if (existLocal(id, filename) == false) {
-					//delete replica
+					// delete replica
 					try {
 						INameServer lns = (INameServer) Naming.lookup("//" + Node.lnsIp + "/LNS");
 						int idTempReplicaFile = lns.getNode(filename);
@@ -205,7 +209,7 @@ public class fileagent {
 						try {
 							INode nodeReplica = (INode) Naming.lookup("//" + ipTempReplicaFile + "/node");
 							System.out.println("Delete " + filename);
-							nodeReplica.deletefile(filename);
+							nodeReplica.deletefile(filename,Node.pathReplica, false);
 						} catch (MalformedURLException | RemoteException | NotBoundException e) {
 							System.out.println("failed to connect the server");
 						}
@@ -220,6 +224,24 @@ public class fileagent {
 		replicaList.remove(id);
 		// Send Hashmap to NextNode
 		sendList();
+	}
+
+	public static ArrayList<Integer> getLocalLocations(String filename) {
+		// Ask location where we can find it in a local folder
+		ArrayList<Integer> listNodesWithFileInLocal= new ArrayList<Integer>();
+		ArrayList<Integer> templistnode = new ArrayList<Integer>(localList.keySet());
+		for (int j = 0; j < templistnode.size(); j++) {
+			ArrayList<String> templistfiles = new ArrayList<String>(localList.get(templistnode.get(j)).keySet());
+			for (int m = 0; m < templistfiles.size(); m++) {
+				if (templistfiles.get(m).equals(filename)) {
+					//System.out.println("Found in local: "+filename+ " at node: "+ templistnode.get(j));
+					listNodesWithFileInLocal.add(templistnode.get(j));
+					break;
+				}
+
+			}
+		}
+		return listNodesWithFileInLocal;
 	}
 
 }

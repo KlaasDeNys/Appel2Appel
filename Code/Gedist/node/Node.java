@@ -28,17 +28,17 @@ import java.util.Random;
 
 public class Node extends UnicastRemoteObject implements INode {
 	private static final long serialVersionUID = 1L;
-	private static String name;		// Name of node, used to calc the id.
+	private static String name; // Name of node, used to calc the id.
 	public static String lnsIp;
 
-	public static int idNext;	// Id number of the next node.
-	public static String ipNext;	// ip of the next node.
-	public static int idPrev;	// Id number of the previous node.
-	public static String ipPrev;	// Ip of the previous node.
+	public static int idNext; // Id number of the next node.
+	public static String ipNext; // ip of the next node.
+	public static int idPrev; // Id number of the previous node.
+	public static String ipPrev; // Ip of the previous node.
 	public static int idOwn;
 
-	private static String pathLokaal = "c://lokaal/";
-	private static String pathReplica = "c://replica/";
+	public static String pathLokaal = "c://lokaal/";
+	public static String pathReplica = "c://replica/";
 	public static HashMap<String, Integer> local = new HashMap<String, Integer>();
 	public static HashMap<String, Integer> replica = new HashMap<String, Integer>();
 	public static HashMap<String, Boolean> filesSystemNode = new HashMap<String, Boolean>();
@@ -73,15 +73,15 @@ public class Node extends UnicastRemoteObject implements INode {
 		gui.setVisible(true);
 	}
 
-	public static void shutdown() throws IOException { // Call to shut down this node.
+	public static void shutdown() throws IOException { // Call to shut down this
+														// node.
 		/*
 		 * 
-		 * Steps to shutdown a node:
-		 * 	Remove itself out of the nameServer.
-		 * 	Change the prev and next node in the neighbor nodes;
-		 * 	Transfer replicas to next node.
-		 * 	Ask to agent if their are any other local copy's of the files in own local folder.
-		 * 	Remove the replicas of this node's local files in other node's replica folders.
+		 * Steps to shutdown a node: Remove itself out of the nameServer. Change
+		 * the prev and next node in the neighbor nodes; Transfer replicas to
+		 * next node. Ask to agent if their are any other local copy's of the
+		 * files in own local folder. Remove the replicas of this node's local
+		 * files in other node's replica folders.
 		 * 
 		 */
 
@@ -113,7 +113,8 @@ public class Node extends UnicastRemoteObject implements INode {
 			}
 			return;
 		}
-		// Change the prev and next node in the neighbor nodes; Transfer replicas to next node.
+		// Change the prev and next node in the neighbor nodes; Transfer
+		// replicas to next node.
 		if (ipNext != null && ipNext != ip()) {
 			final File folder1 = new File(pathReplica);
 			HashMap<String, Integer> replicaNew = listLocalFiles(folder1);
@@ -146,8 +147,10 @@ public class Node extends UnicastRemoteObject implements INode {
 			System.out.println("failed to connect the server");
 		}
 
-		// Ask to agent if their are any other local copy's of the files in own local folder.
-		// Remove the replicas of this node's local files in other node's replica folders.
+		// Ask to agent if their are any other local copy's of the files in own
+		// local folder.
+		// Remove the replicas of this node's local files in other node's
+		// replica folders.
 		final File folder1 = new File(pathLokaal);
 		HashMap<String, Integer> lokaal = listLocalFiles(folder1);
 		ArrayList<String> lokaalList = new ArrayList<String>(lokaal.keySet());
@@ -167,7 +170,7 @@ public class Node extends UnicastRemoteObject implements INode {
 					try {
 						INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
 						try {
-							node.deletefile(filename);
+							node.deletefile(filename, pathReplica, false);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -185,8 +188,8 @@ public class Node extends UnicastRemoteObject implements INode {
 
 			}
 		}
-		
-		System.exit(0);	// Stop all processes of this system.
+
+		System.exit(0); // Stop all processes of this system.
 
 	}
 
@@ -209,7 +212,7 @@ public class Node extends UnicastRemoteObject implements INode {
 				Thread getFileThread = new Thread() {
 					public void run() {
 						try {
-							node.getFile(socketPort, ip(), filename);
+							node.getFile(socketPort, ip(), filename, pathReplica);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -267,7 +270,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		local.clear();
 		for (int i = 0; i < localNewList.size(); i++) {
 			String var = localNewList.get(i);
-			//gui.addFile(var, true); /*** GUI functie */
+			// gui.addFile(var, true); /*** GUI functie */
 			local.put(var, hasher(var));
 		}
 		// System.out.println("dit is de nieuwe local: " + local);
@@ -488,8 +491,8 @@ public class Node extends UnicastRemoteObject implements INode {
 				try {
 					INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
 					try {
-						node.deletefile(verwijder);
-						//gui.deleteFile(verwijder);
+						node.deletefile(verwijder, pathReplica, false);
+						// gui.deleteFile(verwijder);
 					} catch (IOException e) {
 
 						e.printStackTrace();
@@ -528,7 +531,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		idPrev = id;
 		ipPrev = ip;
 		System.out.println("Node message: prev node is changed: id: " + id + " ip: " + ip);
-		// distribute replicas on the previous neighbors. 
+		// distribute replicas on the previous neighbors.
 
 		try {
 			VerplaatsenNextPrevNode(idPrev);
@@ -564,13 +567,14 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 	}
 
-	public void getFile(int portNr, String ip, String filename) throws IOException { 
-		// Called when another node has to send a replica of a file to this node.
+	public void getFile(int portNr, String ip, String filename, String path) throws IOException {
+		// Called when another node has to send a replica of a file to this
+		// node.
 		try {
 			Socket sock = new Socket(ip, portNr);
 			byte[] mybytearray = new byte[6022386];
 			InputStream is = sock.getInputStream();
-			FileOutputStream fos = new FileOutputStream(pathReplica + filename);
+			FileOutputStream fos = new FileOutputStream(path + filename);
 			BufferedOutputStream bos = new BufferedOutputStream(fos);
 			int current = 0;
 			int bytesRead = is.read(mybytearray, 0, mybytearray.length);
@@ -591,21 +595,23 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 	}
 
-	public void deletefile(String filename) throws RemoteException {
-		try {
+	public void deletefile(String filename, String pathName, boolean force) throws RemoteException {
+		if (fileagent.existLocal(idOwn, filename) == false || force==true) {
+			try {
+				File file = new File( pathName+ filename);
+				filesSystemNode.remove(filename);
+				if (file.delete()) {
+					// System.out.println(file.getName() + " is deleted!");
+				} else {
+					System.out.println("Delete operation is failed:" + file.getName());
+				}
 
-			File file = new File(pathReplica + filename);
-			filesSystemNode.remove(filename);
-			if (file.delete()) {
-				// System.out.println(file.getName() + " is deleted!");
-			} else {
-				System.out.println("Delete operation is failed:" + file.getName());
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
+		}else{
+			System.out.println("File exist somewhere else.");
 		}
-
 	}
 
 	/*************************
@@ -724,7 +730,7 @@ public class Node extends UnicastRemoteObject implements INode {
 			Thread getFileThread = new Thread() {
 				public void run() {
 					try {
-						node.getFile(socketPort, ip(), filename);
+						node.getFile(socketPort, ip(), filename, pathReplica);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -754,17 +760,45 @@ public class Node extends UnicastRemoteObject implements INode {
 
 	/***************
 	 * GUI methodes
+	 * 
+	 * @throws IOException
 	 ************/
-	public static void open(String fileName) { // The GUI will call this method
-												// when the user want to open a
-												// file that isn't represented
-												// in the local map.
+	public static void open(String filename) throws IOException { // The GUI
+																	// will call
+																	// this
+																	// method
+		// when the user want to open a
+		// file that isn't represented
+		// in the local map.
 		System.out.println("Node void open()");
+		// Lijst alles nodes waar bestand voorkomt in Local
+		// Vraag lookup aan nameserver
+		// Kopieer bestand naar lokaal
+		try {
+			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
+			int idnode = lns.getNode(filename);
+			String ipfilenode = lns.lookUp(idnode);
+			final INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
+			// Roep RMI op bij waar file in replica zit
+			node.copyReplicaToLocal(ip(), filename);
+			gui.changeLocality(filename, true);
+			openLocal(filename);
+		} catch (MalformedURLException e) {
+			System.out.println("Node.getNode (): MalformedURLException\n\n" + e);
+		} catch (RemoteException e) {
+			System.out.println("Node.getNode (): RemoteException\n\n" + e);
+		} catch (NotBoundException e) {
+			System.out.println("Node.getNode (): NotBoundException\n\n" + e);
+		}
 	}
 
-	public static void openLocal(String fileName) { // The GUI will call this
-													// method when the user want
-													// to open a local file.
+	public static void openLocal(String fileName) throws IOException { // The
+																		// GUI
+																		// will
+																		// call
+																		// this
+		// method when the user want
+		// to open a local file.
 		File file = new File(pathLokaal + fileName);
 		if (file.exists()) {
 			try {
@@ -773,9 +807,9 @@ public class Node extends UnicastRemoteObject implements INode {
 			} catch (IOException e) {
 				System.out.println("IO exception in Node: void openLocel():\nFailed to run " + fileName + ".\n" + e);
 			}
-		} else {	// When the given file doesn't exist in the local map.
+		} else { // When the given file doesn't exist in the local map.
 			gui.changeLocality(fileName, false);
-			open (fileName);	// Call the none local version of this function.
+			open(fileName); // Call the none local version of this function.
 		}
 	}
 
@@ -783,7 +817,39 @@ public class Node extends UnicastRemoteObject implements INode {
 													// method when the user want
 													// to remove a file out of
 													// the system.
-		System.out.println("Node void delete()");
+		//Remove all local files
+		ArrayList<Integer> localnodes = new ArrayList<Integer>(fileagent.getLocalLocations(fileName));
+		for (int j = 0; j < localnodes.size(); j++) {
+			try {
+				INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
+				String ipfilenode = lns.lookUp(localnodes.get(j));
+				final INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
+				// Verwijder alle lokale bestanden
+				node.deletefile(fileName, pathLokaal, true);
+				gui.changeLocality(fileName, false);
+				} catch (MalformedURLException e) {
+				System.out.println("Node.getNode (): MalformedURLException\n\n" + e);
+			} catch (RemoteException e) {
+				System.out.println("Node.getNode (): RemoteException\n\n" + e);
+			} catch (NotBoundException e) {
+				System.out.println("Node.getNode (): NotBoundException\n\n" + e);
+			}
+		}
+		//Remove replica
+		try {
+			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
+			int idnode = lns.getNode(fileName);
+			String ipfilenode = lns.lookUp(idnode);
+			final INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
+			node.deletefile( fileName, pathReplica, true);
+			gui.changeLocality(fileName, false);
+			} catch (MalformedURLException e) {
+			System.out.println("Node.getNode (): MalformedURLException\n\n" + e);
+		} catch (RemoteException e) {
+			System.out.println("Node.getNode (): RemoteException\n\n" + e);
+		} catch (NotBoundException e) {
+			System.out.println("Node.getNode (): NotBoundException\n\n" + e);
+		}
 	}
 
 	public static void deleteLocal(String fileName) { // This method will be
@@ -791,12 +857,16 @@ public class Node extends UnicastRemoteObject implements INode {
 														// to delete a local
 														// file.
 		File file = new File(pathLokaal + fileName);
-		if (!file.exists()) {	// if the given file doesn't exist in the local folder.
-			gui.changeLocality(fileName, false);	// Remove the button "delete local" from this file.
+		if (!file.exists()) { // if the given file doesn't exist in the local
+								// folder.
+			gui.changeLocality(fileName, false); // Remove the button "delete
+													// local" from this file.
 			System.out.println(fileName + " is not a local file."); // -------Report
 		} else {
 			if (file.delete()) {
-				gui.changeLocality(fileName, false);	// Remove delete local button when file is successfully removed.
+				gui.changeLocality(fileName, false); // Remove delete local
+														// button when file is
+														// successfully removed.
 			} else {
 				System.out.println("Failed to delete " + fileName + " local."); // -------Report
 			}
@@ -827,7 +897,44 @@ public class Node extends UnicastRemoteObject implements INode {
 			Thread getFileThread = new Thread() {
 				public void run() {
 					try {
-						node.getFile(socketPort, ip(), filename);
+						node.getFile(socketPort, ip(), filename, pathReplica);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			};
+			getFileThread.start();
+
+			Socket sock = servsock.accept();
+			byte[] mybytearray = new byte[(int) myFile.length()];
+			FileInputStream fis = new FileInputStream(myFile);
+			BufferedInputStream bis = new BufferedInputStream(fis);
+			bis.read(mybytearray, 0, mybytearray.length);
+			OutputStream os = sock.getOutputStream();
+			os.write(mybytearray, 0, mybytearray.length);
+			while (getFileThread.isAlive())
+				;
+			os.flush();
+			servsock.close();
+			bis.close();
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void copyReplicaToLocal(String ipLocal, String filename) throws RemoteException {
+		try {
+			final int socketPort = getSocketPort();
+			ServerSocket servsock = new ServerSocket(socketPort);
+			File myFile = new File(pathReplica + filename);
+			final INode node = (INode) Naming.lookup("//" + ipLocal + "/node");
+
+			Thread getFileThread = new Thread() {
+				public void run() {
+					try {
+						node.getFile(socketPort, ip(), filename, pathLokaal);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}

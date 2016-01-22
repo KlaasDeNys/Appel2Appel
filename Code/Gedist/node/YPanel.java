@@ -3,6 +3,8 @@ package node;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -73,14 +75,19 @@ public class YPanel extends JPanel implements ActionListener {
 	public void actionPerformed(ActionEvent e) {	// When the user press a button.
 		JButton b = (JButton)e.getSource();
 		if (b == butOpen)
-			open ();
+			try {
+				open ();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		else if (b == butDelete)
 			delete ();
 		else if (b == butDeleteLocal)
 			deleteLocal ();
 	}
 	
-	private void open () {	// Open this file.
+	private void open () throws IOException {	// Open this file.
 		if (local)	// The function that is called inside the main depends on the locality of the file.
 			Node.openLocal(fileName);
 		else
