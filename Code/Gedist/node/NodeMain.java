@@ -24,7 +24,7 @@ public class NodeMain {
 			registry.bind ("node", node);
 			
 		} catch (Exception e) {
-			System.out.println ("Node message: RMI: Exception:\n" + e);
+			new errorReport ("RMI error","Failed to launch RMI service.");
 		}
 		while (node.bootstrap);	// The RMI service may only launch when the node has started up for 100 %
 		(new ThreadFiles()).start();

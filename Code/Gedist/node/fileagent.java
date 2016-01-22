@@ -42,18 +42,8 @@ public class fileagent {
 			try {
 				INode nextnode = (INode) Naming.lookup("//" + Node.ipNext + "/node");
 				nextnode.refreshAgent(localList, replicaList);
-			} catch (MalformedURLException e) {
+			} catch (MalformedURLException | RemoteException | NotBoundException e) {
 				failure();
-				// System.out.println("Agent.refreshAgent ():
-				// MalformedURLException\n\n" + e);
-			} catch (RemoteException e) {
-				failure();
-				// System.out.println("Agent.refreshAgent ():
-				// RemoteException\n\n" + e);
-			} catch (NotBoundException e) {
-				failure();
-				// System.out.println("Agent.refreshAgent ():
-				// NotBoundException\n\n" + e);
 			}
 		}
 	}
@@ -95,8 +85,6 @@ public class fileagent {
 		// Replace own part
 		localList.put(Node.idOwn, templocal);
 		replicaList.put(Node.idOwn, tempreplica);
-		//System.out.println("Local:  " + localList);
-		//System.out.println("Replica:  " + replicaList);
 
 	}
 
@@ -106,8 +94,7 @@ public class fileagent {
 
 	public static void failure() {
 		int id = Node.idNext;
-		System.out.println("Failure:  " + Node.idNext);
-		// Meld failure to nameServer
+		// report failure to nameServer
 		// Ask next neighbor from the nameServer
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + Node.lnsIp + "/LNS");
@@ -115,7 +102,7 @@ public class fileagent {
 			Node.idNext = lns.getNext(Node.idOwn);
 			Node.ipNext = lns.lookUp(Node.idNext);
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
-			System.out.println("failed to connect the server");
+			new errorReport("File agent error", "Can't connect to the name server.");
 		}
 		// Move files from replica to next when necessarily.
 		try {

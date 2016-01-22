@@ -2,7 +2,6 @@ package node;
 
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import javax.swing.BoxLayout;
@@ -26,11 +25,7 @@ public class NodeGui extends JFrame {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);	// The functionality of the node may not stop when the user press the cros.
 		addWindowListener(new WindowListener() {	// Call the Node.shutdown() procedure when closing for a legal shutdown.
 			public void windowClosing(WindowEvent arg0) {	// When the user press the cross.
-				try {
-					Node.shutdown();
-				} catch (IOException e) {
-					System.out.println("Fault in GUI: failed to shutdown node:\n" + e);
-				}
+				Node.shutdown();
 			}
 			public void windowActivated(WindowEvent e) {}	// When the user pop open the window.
 			public void windowClosed(WindowEvent e) {}	// When the window disappear.
@@ -45,9 +40,8 @@ public class NodeGui extends JFrame {
 			public void run () {
 				while (true) {
 					try {
-						Thread.sleep(5100);	// The lists in the file agent only check up every 5 seconds.
+						Thread.sleep(1100);	// The lists in the file agent only check up every 5 seconds.
 					} catch (InterruptedException e) {
-						System.out.println("failed to freeze checkup thread. \n" + e);
 					}
 					updateGui();	// Update the GUI.
 				}

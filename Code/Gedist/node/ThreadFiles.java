@@ -6,15 +6,12 @@ import java.io.IOException;
 public class ThreadFiles extends Thread{
 	   public void run() {
 		   boolean flag = true;
-		    try{
-			   
-			   Thread.sleep(5000);	//Checks every 5s
+		    try{			   
+			   Thread.sleep(1000);	//Checks every 5s
 		   } catch(Exception e){
-			   System.out.println("Thread is ended! The error is " + e.getMessage());	// ----report
 		   }
 		   if(!flag)		//Only when the flag is false, the thread ends
 			   return;
-		   else
 			   
 		   try {
 			   //if (Node.ipNext != null && Node.ipNext != Node.ip()){
@@ -22,13 +19,11 @@ public class ThreadFiles extends Thread{
 			fileagent.sendList();	// Update the Hashmap of the fileAgent
 		
 			run();	// Create a loop.
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		   } catch (InterruptedException e) {
+			   new errorReport ("Failed to repeat file update process. (InterruptedException)");
+		   } catch (IOException e) {
+			   new errorReport ("File Agent Error", "Failed to send file agent information to other nodes. (IOException)");
+		   }
 		   
 	   }
 	   
