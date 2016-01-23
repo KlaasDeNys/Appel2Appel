@@ -495,10 +495,10 @@ public class Node extends UnicastRemoteObject implements INode {
 			if (lookupFile(replicaNames.get(i)) == idNextPrev) {
 				replicaMoves.add(replicaNames.get(i));
 				System.out
-						.println("Te Verplaatsen: " + replicaNames.get(i) + "\t Hash: " + hasher(replicaNames.get(i)));
+						.println("Te Verplaatsen: " + replicaNames.get(i) + "\t Hash: " + hasher(replicaNames.get(i)));	//---Report
 			} else {
 				System.out.println(
-						"Blijft op positie : " + replicaNames.get(i) + "\t Hash: " + hasher(replicaNames.get(i)));
+						"Blijft op positie : " + replicaNames.get(i) + "\t Hash: " + hasher(replicaNames.get(i)));	//---Report
 			}
 
 		}
@@ -535,7 +535,7 @@ public class Node extends UnicastRemoteObject implements INode {
 			sock.close();
 			bos.close();
 		} catch (IOException e) {
-			System.out.println("IOException in getFile():\n" + e);
+			new errorReport ("Failed to send " + path + filename + " to " + ip + " through port " + portNr + ".");
 		}
 	}
 
@@ -547,14 +547,14 @@ public class Node extends UnicastRemoteObject implements INode {
 				if (file.delete()) {
 					// System.out.println(file.getName() + " is deleted!");
 				} else {
-					System.out.println("Delete operation is failed:" + file.getName());
+					new errorReport ("Failed to delete " + pathName + filename + ".");
 				}
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				new errorReport ("Can't find " + pathName + filename + ".");
 			}
 		}else{
-			System.out.println("File exist somewhere else.");
+			new errorReport ("Can't find " + pathName + filename + ".");
 		}
 	}
 
@@ -574,8 +574,7 @@ public class Node extends UnicastRemoteObject implements INode {
 			address = InetAddress.getLocalHost();
 			hostIp = address.getHostAddress();
 		} catch (UnknownHostException e) {
-			System.out.println("UnknownHostException: " + e);
-			e.printStackTrace();
+			new errorReport ("System Y can't determine system's ip. Be sure your network interface is configured. (UnknownHostException)");
 			return null;
 		}
 
@@ -609,12 +608,11 @@ public class Node extends UnicastRemoteObject implements INode {
 				if (file.delete()) {
 					// System.out.println(file.getName() + " is deleted!");
 				} else {
-					System.out.println("Delete operation is failed, " + replicaNewList);
+					new errorReport ("Failed to delete " + pathReplica + replicaNewList.get(i) + ".");
 				}
 
 			} catch (Exception e) {
-				System.out.println("Delete operation is failed, " + replicaNewList);
-				e.printStackTrace();
+				new errorReport ("Can't find " + pathReplica + replicaNewList.get(i) + ".");
 			}
 		}
 	}
@@ -624,13 +622,9 @@ public class Node extends UnicastRemoteObject implements INode {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
 			return lns.getNode(filename);
 
-		} catch (MalformedURLException e) {
-			System.out.println("Node.lookupFile (): MalformedURLException\n\n" + e);
-		} catch (RemoteException e) {
-			System.out.println("Node.lookupFile (): RemoteException\n\n" + e);
-		} catch (NotBoundException e) {
-			System.out.println("Node.lookupFile (): NotBoundException\n\n" + e);
-		}
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			new errorReport ("RMI Error", "Can't make connection with the RMI service of the name server.");
+		} 
 		return 0;
 	}
 
@@ -649,21 +643,18 @@ public class Node extends UnicastRemoteObject implements INode {
 
 	public static void copyToNode(final String filename) throws IOException {
 		String ipfilenode = "";
+		int idnode = 0;
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
-			int idnode = lns.getNode(filename);
+			idnode = lns.getNode(filename);
 			/*
 			 * if (idnode == hasher(name)) { idnode = idNext; }
 			 */
 			ipfilenode = lns.lookUp(idnode);
 			System.out.println("ID copy: " + idnode);
-		} catch (MalformedURLException e) {
-			System.out.println("Node.getNode (): MalformedURLException\n\n" + e);
-		} catch (RemoteException e) {
-			System.out.println("Node.getNode (): RemoteException\n\n" + e);
-		} catch (NotBoundException e) {
-			System.out.println("Node.getNode (): NotBoundException\n\n" + e);
-		}
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			new errorReport ("RMI Error", "Can't make connection with the RMI service of the name server.");
+		} 
 
 		try {
 			final int socketPort = getSocketPort();
@@ -676,7 +667,7 @@ public class Node extends UnicastRemoteObject implements INode {
 					try {
 						node.getFile(socketPort, ip(), filename, pathReplica);
 					} catch (IOException e) {
-						e.printStackTrace();
+						//new errorReport ("Failed to download " + pathReplica + filename + " from " + idnode + ".");
 					}
 				}
 			};
