@@ -51,7 +51,7 @@ public class NodeGui extends JFrame {
 		
 	}
 	
-	public void updateGui() {	// Called every 5 seconds to keep the gui up to date.
+	public void updateGui() {	// Called every second to keep the gui up to date.
 		new fileagent();	// The fileagent contains a map with all the files that are circulating in the system.
 		
 		HashMap <String, Integer> presentItems = new HashMap <String, Integer> ();
@@ -61,28 +61,30 @@ public class NodeGui extends JFrame {
 		}
 		
 		for (Iterator<Integer> i = fileagent.localList.keySet().iterator(); i.hasNext();) {
-			Integer id = i.next();			
-			for (Iterator<String> j = fileagent.localList.get(id).keySet().iterator(); j.hasNext();) {
-				String element = j.next();
-				if (presentItems.containsKey(element)) {	// If element is already presented on the GUI.
-					if(id == nodeId) {	// Check if the locality is still right.
-						presentItems.put(element, 2);
-						changeLocality(element, true);
-					} else {
-						if (presentItems.get(element) == 0) {
-							presentItems.put(element, 1);
-							changeLocality(element, false);
+			Integer id = i.next();
+			if (fileagent.localList.get(id).keySet().iterator() != null) {
+				for (Iterator<String> j = fileagent.localList.get(id).keySet().iterator(); j.hasNext();) {
+					String element = j.next();
+					if (presentItems.containsKey(element)) {	// If element is already presented on the GUI.
+						if(id == nodeId) {	// Check if the locality is still right.
+							presentItems.put(element, 2);
+							changeLocality(element, true);
+						} else {
+							if (presentItems.get(element) == 0) {
+								presentItems.put(element, 1);
+								changeLocality(element, false);
+							}
 						}
-					}
-				} else {	// If element isn't yet presented on the GUI.
-					if (id == nodeId) {	// Check locality before add the file.
-						addFile(element, true);
-						presentItems.put(element,2);
-					} else {
-						addFile(element, false);
-						presentItems.put(element, 1);
-					}
-				}			
+					} else {	// If element isn't yet presented on the GUI.
+						if (id == nodeId) {	// Check locality before add the file.
+							addFile(element, true);
+							presentItems.put(element,2);
+						} else {
+							addFile(element, false);
+							presentItems.put(element, 1);
+						}
+					}			
+				}
 			}
 		}
 		for (Iterator <String> i = presentItems.keySet().iterator(); i.hasNext();) {

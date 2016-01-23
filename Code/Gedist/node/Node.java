@@ -151,7 +151,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		final File folder1 = new File(pathLokaal);
 		HashMap<String, Integer> lokaal = listLocalFiles(folder1);
 		ArrayList<String> lokaalList = new ArrayList<String>(lokaal.keySet());
-		System.out.println("Contents of lokaal: " + lokaalList);
+		System.out.println("Contents of lokaal: " + lokaalList);	//---Report
 
 		for (int i = 0; i < lokaalList.size(); i++) {
 			String filename = lokaalList.get(i);
@@ -162,7 +162,7 @@ public class Node extends UnicastRemoteObject implements INode {
 					INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
 					int idnode = lns.getNode(filename);
 					ipfilenode = lns.lookUp(idnode);
-					System.out.println("ID delete: " + idnode);
+					System.out.println("ID delete: " + idnode);	//---Report
 					INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
 					try {
 						node.deletefile(filename, pathReplica, false);
@@ -363,7 +363,7 @@ public class Node extends UnicastRemoteObject implements INode {
 				return false;
 			} else {
 				ipPrev = lns.lookUp(idPrev);
-				System.out.println("Node message: Prev node: ip: " + ipPrev + " id: " + idPrev);
+				System.out.println("Node message: Prev node: ip: " + ipPrev + " id: " + idPrev);	//---Report
 			}
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			new errorReport ("RMI Error", "Failed to make connection with the RMI service of the server. Node doesn't know his under neighbour.");
@@ -400,7 +400,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		ArrayList<Integer> al3 = new ArrayList<Integer>();
 		for (String temp1 : al2)
 			al3.add(al1.contains(temp1) ? 1 : 0);
-		// System.out.println("check to copy: " + al3);
+		// System.out.println("check to copy: " + al3);	//---Report
 
 		// Check delete file
 		ArrayList<Integer> al4 = new ArrayList<Integer>();
