@@ -116,12 +116,8 @@ public class fileagent {
 			try {
 				INode nextnode = (INode) Naming.lookup("//" + Node.ipNext + "/node");
 				nextnode.changePrevNode(Node.idOwn, Node.ip());
-			} catch (MalformedURLException e) {
-				System.out.println("Agent.failure (): MalformedURLException\n\n" + e);
-			} catch (RemoteException e) {
-				System.out.println("Agent.failure (): RemoteException\n\n" + e);
-			} catch (NotBoundException e) {
-				System.out.println("Agent.failure (): NotBoundException\n\n" + e);
+			} catch (MalformedURLException | RemoteException | NotBoundException e) {
+				new errorReport("Agent Error", "Agent failed to make connection with the RMI service of the server.");
 			}
 
 			// Bijkijk bestanden dode buur
@@ -164,13 +160,13 @@ public class fileagent {
 						// Copy from local to replica
 						try {
 							INode nodeLocal = (INode) Naming.lookup("//" + ipTempLocalFile + "/node");
-							System.out.println("Recover " + filename);
+							System.out.println("Recover " + filename);	//--- Report
 							nodeLocal.copyLocalToReplica(ipTempReplicaFile, filename);
 						} catch (MalformedURLException | RemoteException | NotBoundException e) {
 							System.out.println("failed to connect the server");
 						}
 					} catch (MalformedURLException | RemoteException | NotBoundException e) {
-						System.out.println("failed to connect the server");
+						new errorReport("Agent Error", "Agent failed to make connection with the RMI service of the server.");
 					}
 
 				}
@@ -197,10 +193,10 @@ public class fileagent {
 							System.out.println("Delete " + filename);
 							nodeReplica.deletefile(filename,Node.pathReplica, false);
 						} catch (MalformedURLException | RemoteException | NotBoundException e) {
-							System.out.println("failed to connect the server");
+							new errorReport("Agent Error", "Agent failed to make connection with the RMI service of node at " + ipTempReplicaFile + ".");
 						}
 					} catch (MalformedURLException | RemoteException | NotBoundException e) {
-						System.out.println("failed to connect the server");
+						new errorReport("Agent Error", "Agent failed to make connection with the RMI service of this node.");
 					}
 				}
 			}
