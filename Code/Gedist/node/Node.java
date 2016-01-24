@@ -686,9 +686,9 @@ public class Node extends UnicastRemoteObject implements INode {
 			servsock.close();
 			bis.close();
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
-			e.printStackTrace();
+			new errorReport("RMI Error", "Can't make connection with the RMI service of node " + idnode + ".");
 		} catch (IOException e) {
-			e.printStackTrace();
+			new errorReport("TCP Error", "line 691");
 		}
 
 	}
@@ -705,7 +705,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		// when the user want to open a
 		// file that isn't represented
 		// in the local map.
-		System.out.println("Node void open()");
+		System.out.println("Node void open()");	//---Report
 		// Lijst alles nodes waar bestand voorkomt in Local
 		// Vraag lookup aan nameserver
 		// Kopieer bestand naar lokaal
@@ -718,12 +718,8 @@ public class Node extends UnicastRemoteObject implements INode {
 			node.copyReplicaToLocal(ip(), filename);
 			gui.changeLocality(filename, true);
 			openLocal(filename);
-		} catch (MalformedURLException e) {
-			System.out.println("Node.getNode (): MalformedURLException\n\n" + e);
-		} catch (RemoteException e) {
-			System.out.println("Node.getNode (): RemoteException\n\n" + e);
-		} catch (NotBoundException e) {
-			System.out.println("Node.getNode (): NotBoundException\n\n" + e);
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			new errorReport("RMI Error", "Can't make connection with the RMI service of the name server.");
 		}
 	}
 
@@ -740,7 +736,7 @@ public class Node extends UnicastRemoteObject implements INode {
 				@SuppressWarnings("unused")
 				Process p = Runtime.getRuntime().exec("rundll32 url.dll, FileProtocolHandler " + pathLokaal + fileName);
 			} catch (IOException e) {
-				System.out.println("IO exception in Node: void openLocel():\nFailed to run " + fileName + ".\n" + e);
+				new errorReport ("Can't open " + pathLokaal + fileName + ".");
 			}
 		} else { // When the given file doesn't exist in the local map.
 			gui.changeLocality(fileName, false);
@@ -762,29 +758,22 @@ public class Node extends UnicastRemoteObject implements INode {
 				// Verwijder alle lokale bestanden
 				node.deletefile(fileName, pathLokaal, true);
 				gui.changeLocality(fileName, false);
-				} catch (MalformedURLException e) {
-				System.out.println("Node.getNode (): MalformedURLException\n\n" + e);
-			} catch (RemoteException e) {
-				System.out.println("Node.getNode (): RemoteException\n\n" + e);
-			} catch (NotBoundException e) {
-				System.out.println("Node.getNode (): NotBoundException\n\n" + e);
-			}
+				} catch (MalformedURLException | RemoteException | NotBoundException e) {
+					new errorReport("RMI Error", "Can't make connection with the RMI service of the server.");
+				}
 		}
 		//Remove replica
+		int idnode = 0;
 		try {
 			INameServer lns = (INameServer) Naming.lookup("//" + lnsIp + "/LNS");
-			int idnode = lns.getNode(fileName);
+			idnode = lns.getNode(fileName);
 			String ipfilenode = lns.lookUp(idnode);
 			final INode node = (INode) Naming.lookup("//" + ipfilenode + "/node");
 			node.deletefile( fileName, pathReplica, true);
 			gui.changeLocality(fileName, false);
-			} catch (MalformedURLException e) {
-			System.out.println("Node.getNode (): MalformedURLException\n\n" + e);
-		} catch (RemoteException e) {
-			System.out.println("Node.getNode (): RemoteException\n\n" + e);
-		} catch (NotBoundException e) {
-			System.out.println("Node.getNode (): NotBoundException\n\n" + e);
-		}
+			} catch (MalformedURLException | RemoteException | NotBoundException e) {
+				new errorReport("RMI Error", "Can't make connection with node " + idnode + ".");
+			}
 	}
 
 	public static void deleteLocal(String fileName) { // This method will be
@@ -796,14 +785,14 @@ public class Node extends UnicastRemoteObject implements INode {
 								// folder.
 			gui.changeLocality(fileName, false); // Remove the button "delete
 													// local" from this file.
-			System.out.println(fileName + " is not a local file."); // -------Report
+			new errorReport ("Can't find " + pathLokaal + fileName + ".");
 		} else {
 			if (file.delete()) {
 				gui.changeLocality(fileName, false); // Remove delete local
 														// button when file is
 														// successfully removed.
 			} else {
-				System.out.println("Failed to delete " + fileName + " local."); // -------Report
+				new errorReport ("Failed to delete " + pathLokaal + fileName + ".");
 			}
 		}
 	}
@@ -816,8 +805,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		try {
 			fileagent.refreshList(localList, replicaList);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			new errorReport ("Agent Error", "Failed to run refreshList.");
 		}
 
 	}
@@ -834,7 +822,7 @@ public class Node extends UnicastRemoteObject implements INode {
 					try {
 						node.getFile(socketPort, ip(), filename, pathReplica);
 					} catch (IOException e) {
-						e.printStackTrace();
+						new errorReport ("RMI Error","Failed to start send procedure at node with ip adress " + ipReplica + ". " + pathReplica + filename + " won't be send.");
 					}
 				}
 			};
@@ -853,9 +841,9 @@ public class Node extends UnicastRemoteObject implements INode {
 			servsock.close();
 			bis.close();
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
-			e.printStackTrace();
+			new errorReport("RMI Error", "Failed to make connection with the RMI service of noda at " + ipReplica + ".");
 		} catch (IOException e) {
-			e.printStackTrace();
+			new errorReport("TCP Error", "Failed to recieve " + filename + " from noda at " + ipReplica + ".");
 		}
 	}
 
@@ -871,7 +859,7 @@ public class Node extends UnicastRemoteObject implements INode {
 					try {
 						node.getFile(socketPort, ip(), filename, pathLokaal);
 					} catch (IOException e) {
-						e.printStackTrace();
+						new errorReport ("RMI Error","Failed to start send procedure at node with ip adress " + ipLocal + ". " + pathLokaal + filename + " won't be send.");
 					}
 				}
 			};
@@ -890,9 +878,9 @@ public class Node extends UnicastRemoteObject implements INode {
 			servsock.close();
 			bis.close();
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
-			e.printStackTrace();
+			new errorReport("RMI Error", "Failed to make connection with the RMI service of noda at " + ipLocal + ".");
 		} catch (IOException e) {
-			e.printStackTrace();
+			new errorReport("TCP Error", "Failed to recieve " + filename + " from noda at " + ipLocal + ".");
 		}
 	}
 }
