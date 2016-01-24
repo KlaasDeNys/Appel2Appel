@@ -85,6 +85,7 @@ public class NodeGui extends JFrame {
 			// system.
 		}
 
+		if (!fileagent.localList.isEmpty()){
 		for (Iterator<Integer> i = fileagent.localList.keySet().iterator(); i.hasNext();) {
 			Integer id = i.next();
 			try {
@@ -122,6 +123,7 @@ public class NodeGui extends JFrame {
 
 			}
 
+		}
 		}
 		for (Iterator<String> i = presentItems.keySet().iterator(); i.hasNext();) {
 			String element = i.next();
