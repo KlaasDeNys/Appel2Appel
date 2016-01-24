@@ -28,12 +28,34 @@ public class fileagent {
 		for (int i = 0; i < localNames.size(); i++) {
 			templistlocal.put(localNames.get(i), 0);
 		}
+		HashMap<String, Integer> templistlocallock = new HashMap<String, Integer>();
+		templistlocallock = localList.get(Node.idOwn);
+		if (templistlocallock != null) {
+			ArrayList<Integer> localintlock = new ArrayList<Integer>(templistlocallock.values());
+			ArrayList<String> localfilelock = new ArrayList<String>(templistlocallock.keySet());
+			for (int i = 0; i < localintlock.size(); i++) {
+				if (localintlock.get(i) == 1) {
+					templistlocal.put(localfilelock.get(i), localintlock.get(i));
+				}
+			}
+		}
 		localList.put(Node.idOwn, templistlocal);
 
 		HashMap<String, Integer> templistreplica = new HashMap<String, Integer>();
 		ArrayList<String> replicaNames = new ArrayList<String>(Node.replica.keySet());
 		for (int i = 0; i < replicaNames.size(); i++) {
 			templistreplica.put(replicaNames.get(i), 0);
+		}
+		HashMap<String, Integer> templistreplicalock = new HashMap<String, Integer>();
+		templistreplicalock = replicaList.get(Node.idOwn);
+		if (templistreplicalock != null) {
+			ArrayList<Integer> replicaintlock = new ArrayList<Integer>(templistreplicalock.values());
+			ArrayList<String> replicafilelock = new ArrayList<String>(templistreplicalock.keySet());
+			for (int i = 0; i < replicaintlock.size(); i++) {
+				if (replicaintlock.get(i) == 1) {
+					templistreplica.put(replicafilelock.get(i), replicaintlock.get(i));
+				}
+			}
 		}
 		replicaList.put(Node.idOwn, templistreplica);
 
@@ -85,7 +107,8 @@ public class fileagent {
 		// Replace own part
 		localList.put(Node.idOwn, templocal);
 		replicaList.put(Node.idOwn, tempreplica);
-
+		//System.out.println("Lokaal: " + localList);
+		//System.out.println("Replica: " + replicaList);
 	}
 
 	/******
